@@ -62,7 +62,7 @@ export default function LeaderboardPage({ userId }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">랭킹 불러오는 중...</div>
+        <div className="text-white/70">랭킹 불러오는 중...</div>
       </div>
     );
   }
@@ -96,19 +96,19 @@ export default function LeaderboardPage({ userId }) {
               <div className="text-sm text-blue-600 font-medium mb-1">내 순위</div>
               <div className="grid grid-cols-4 gap-4 text-sm">
                 <div>
-                  <div className="text-gray-600">점수</div>
+                  <div className="text-white/80">점수</div>
                   <div className="font-bold text-blue-700">#{myRank.ranks.score}</div>
                 </div>
                 <div>
-                  <div className="text-gray-600">연승</div>
+                  <div className="text-white/80">연승</div>
                   <div className="font-bold text-blue-700">#{myRank.ranks.streak}</div>
                 </div>
                 <div>
-                  <div className="text-gray-600">방문역</div>
+                  <div className="text-white/80">방문역</div>
                   <div className="font-bold text-blue-700">#{myRank.ranks.stations}</div>
                 </div>
                 <div>
-                  <div className="text-gray-600">성공률</div>
+                  <div className="text-white/80">성공률</div>
                   <div className="font-bold text-blue-700">#{myRank.ranks.success_rate}</div>
                 </div>
               </div>
@@ -126,7 +126,7 @@ export default function LeaderboardPage({ userId }) {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               period === 'all'
                 ? 'bg-purple-500 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-white/10 text-white/90 hover:bg-white/20'
             }`}
           >
             전체
@@ -136,7 +136,7 @@ export default function LeaderboardPage({ userId }) {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               period === 'weekly'
                 ? 'bg-purple-500 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-white/10 text-white/90 hover:bg-white/20'
             }`}
           >
             주간
@@ -153,7 +153,7 @@ export default function LeaderboardPage({ userId }) {
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
                   type === key
                     ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-white/10 text-white/90 hover:bg-white/20'
                 }`}
               >
                 {icon}
@@ -165,9 +165,9 @@ export default function LeaderboardPage({ userId }) {
       </div>
 
       {/* 랭킹 목록 */}
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl-lg shadow-sm overflow-hidden">
         {rankings.length === 0 ? (
-          <div className="text-center text-gray-500 py-12">
+          <div className="text-center text-white/70 py-12">
             랭킹 데이터가 없습니다.
           </div>
         ) : (
@@ -206,7 +206,7 @@ function RankingItem({ user, rank, type, period, isMe }) {
       };
       return colors[rank];
     }
-    return 'bg-gray-100 text-gray-700';
+    return 'bg-white/10 text-white/90';
   };
 
   const getMainValue = () => {
@@ -247,7 +247,7 @@ function RankingItem({ user, rank, type, period, isMe }) {
 
   return (
     <div
-      className={`p-4 hover:bg-gray-50 transition-colors ${
+      className={`p-4 hover:bg-white/5 transition-colors ${
         isMe ? 'bg-blue-50 border-l-4 border-blue-500' : ''
       }`}
     >
@@ -269,7 +269,7 @@ function RankingItem({ user, rank, type, period, isMe }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2">
-              <span className={`font-bold ${isMe ? 'text-blue-600' : 'text-gray-900'}`}>
+              <span className={`font-bold ${isMe ? 'text-blue-600' : 'text-white'}`}>
                 사용자 {user.user_id}
               </span>
               {isMe && (
@@ -282,7 +282,7 @@ function RankingItem({ user, rank, type, period, isMe }) {
               <div className="text-2xl font-bold text-blue-600">
                 {mainValue.value}
               </div>
-              <div className="text-xs text-gray-500">{mainValue.label}</div>
+              <div className="text-xs text-white/70">{mainValue.label}</div>
             </div>
           </div>
 
@@ -291,30 +291,30 @@ function RankingItem({ user, rank, type, period, isMe }) {
             {period === 'weekly' ? (
               <>
                 <div>
-                  <div className="text-gray-600">주간 도전</div>
+                  <div className="text-white/80">주간 도전</div>
                   <div className="font-medium">{user.weekly_challenges || 0}</div>
                 </div>
                 <div>
-                  <div className="text-gray-600">주간 성공</div>
+                  <div className="text-white/80">주간 성공</div>
                   <div className="font-medium">{user.weekly_completed || 0}</div>
                 </div>
                 <div>
-                  <div className="text-gray-600">성공률</div>
+                  <div className="text-white/80">성공률</div>
                   <div className="font-medium">{user.weekly_success_rate?.toFixed(1) || 0}%</div>
                 </div>
               </>
             ) : (
               <>
                 <div>
-                  <div className="text-gray-600">총 도전</div>
+                  <div className="text-white/80">총 도전</div>
                   <div className="font-medium">{user.total_challenges || 0}</div>
                 </div>
                 <div>
-                  <div className="text-gray-600">성공</div>
+                  <div className="text-white/80">성공</div>
                   <div className="font-medium">{user.completed_challenges || 0}</div>
                 </div>
                 <div>
-                  <div className="text-gray-600">업적</div>
+                  <div className="text-white/80">업적</div>
                   <div className="font-medium">{user.achievement_count || 0}</div>
                 </div>
               </>

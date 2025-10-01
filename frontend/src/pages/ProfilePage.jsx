@@ -41,7 +41,7 @@ export default function ProfilePage({ userId }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">프로필 불러오는 중...</div>
+        <div className="text-white/70">프로필 불러오는 중...</div>
       </div>
     );
   }
@@ -108,7 +108,7 @@ export default function ProfilePage({ userId }) {
 
       {/* 대표 업적 */}
       {topAchievements.length > 0 && (
-        <div className="bg-white rounded-lg p-6 shadow-sm">
+        <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl-lg p-6 shadow-sm">
           <h2 className="text-xl font-bold mb-4 flex items-center">
             <Award className="w-5 h-5 mr-2 text-yellow-500" />
             대표 업적
@@ -120,8 +120,8 @@ export default function ProfilePage({ userId }) {
                 className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-4 border-2 border-yellow-400"
               >
                 <div className="text-4xl mb-2">{achievement.icon}</div>
-                <div className="font-bold text-gray-900 mb-1">{achievement.name}</div>
-                <div className="text-sm text-gray-600 mb-2">{achievement.description}</div>
+                <div className="font-bold text-white mb-1">{achievement.name}</div>
+                <div className="text-sm text-white/80 mb-2">{achievement.description}</div>
                 <div className="text-xs text-yellow-700 font-medium">
                   +{Number(achievement.points)} 포인트
                 </div>
@@ -133,7 +133,7 @@ export default function ProfilePage({ userId }) {
 
       {/* 가장 많이 방문한 역 */}
       {visitedStations.length > 0 && (
-        <div className="bg-white rounded-lg p-6 shadow-sm">
+        <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl-lg p-6 shadow-sm">
           <h2 className="text-xl font-bold mb-4 flex items-center">
             <MapPin className="w-5 h-5 mr-2 text-green-500" />
             가장 많이 방문한 역 TOP 5
@@ -142,7 +142,7 @@ export default function ProfilePage({ userId }) {
             {visitedStations.map((station, index) => (
               <div
                 key={station.station_id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                className="flex items-center justify-between p-3 bg-white/5 rounded-lg"
               >
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
@@ -150,14 +150,14 @@ export default function ProfilePage({ userId }) {
                   </div>
                   <div>
                     <div className="font-medium">{station.station_nm}</div>
-                    <div className="text-sm text-gray-600">{station.line_num}</div>
+                    <div className="text-sm text-white/80">{station.line_num}</div>
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="text-lg font-bold text-blue-600">
                     {station.visit_count}회
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-white/70">
                     최근: {new Date(station.last_visit_at).toLocaleDateString()}
                   </div>
                 </div>
@@ -169,7 +169,7 @@ export default function ProfilePage({ userId }) {
 
       {/* 완료한 노선 */}
       {completedLines.length > 0 && (
-        <div className="bg-white rounded-lg p-6 shadow-sm">
+        <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl-lg p-6 shadow-sm">
           <h2 className="text-xl font-bold mb-4 flex items-center">
             <Star className="w-5 h-5 mr-2 text-purple-500" />
             완료한 노선
@@ -183,7 +183,7 @@ export default function ProfilePage({ userId }) {
                 <div className="text-2xl font-bold text-purple-600 mb-1">
                   {line.line_num}
                 </div>
-                <div className="text-xs text-gray-600">
+                <div className="text-xs text-white/80">
                   {line.total_count}개 역 완료
                 </div>
                 <div className="mt-2">
@@ -196,7 +196,7 @@ export default function ProfilePage({ userId }) {
       )}
 
       {/* 전체 통계 */}
-      <div className="bg-white rounded-lg p-6 shadow-sm">
+      <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl-lg p-6 shadow-sm">
         <h2 className="text-xl font-bold mb-4 flex items-center">
           <Calendar className="w-5 h-5 mr-2 text-blue-500" />
           전체 통계
@@ -231,7 +231,7 @@ export default function ProfilePage({ userId }) {
 
       {/* 노선별 진행률 */}
       {lineStats.length > 0 && (
-        <div className="bg-white rounded-lg p-6 shadow-sm">
+        <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl-lg p-6 shadow-sm">
           <h2 className="text-xl font-bold mb-4">노선별 진행률</h2>
           <div className="space-y-4">
             {lineStats.map(line => {
@@ -240,11 +240,11 @@ export default function ProfilePage({ userId }) {
                 <div key={line.line_num}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium">{line.line_num}</span>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-white/80">
                       {line.visited_count} / {line.total_count} ({percentage.toFixed(1)}%)
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3">
+                  <div className="w-full bg-white/20 rounded-full h-3">
                     <div
                       className={`h-3 rounded-full transition-all duration-300 ${
                         percentage === 100
@@ -276,9 +276,9 @@ function StatBox({ icon, label, value }) {
 
 function StatItem({ label, value }) {
   return (
-    <div className="bg-gray-50 rounded-lg p-4">
-      <div className="text-sm text-gray-600 mb-1">{label}</div>
-      <div className="text-2xl font-bold text-gray-900">{value}</div>
+    <div className="bg-white/5 rounded-lg p-4">
+      <div className="text-sm text-white/80 mb-1">{label}</div>
+      <div className="text-2xl font-bold text-white">{value}</div>
     </div>
   );
 }

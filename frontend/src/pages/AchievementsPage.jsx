@@ -53,7 +53,7 @@ export default function AchievementsPage({ userId }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">업적 불러오는 중...</div>
+        <div className="text-white text-lg">업적 불러오는 중...</div>
       </div>
     );
   }
@@ -61,54 +61,54 @@ export default function AchievementsPage({ userId }) {
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-red-500">{error}</div>
+        <div className="text-red-300 text-lg">{error}</div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-6">
+    <div className="max-w-4xl mx-auto p-4 space-y-6 relative z-10">
       {/* 헤더 */}
-      <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg p-6 text-white shadow-lg">
+      <div className="backdrop-blur-xl bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-400/30 rounded-2xl p-8 text-white shadow-2xl">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2 flex items-center">
-              <Trophy className="w-8 h-8 mr-2" />
+            <h1 className="text-4xl font-bold mb-3 flex items-center">
+              <Trophy className="w-10 h-10 mr-3 text-yellow-400" />
               업적
             </h1>
-            <p className="text-yellow-100">
+            <p className="text-yellow-200 text-lg font-semibold">
               {achieved} / {total} 달성 ({((achieved / total) * 100).toFixed(1)}%)
             </p>
           </div>
           <div className="text-right">
-            <div className="text-5xl font-bold">{achieved}</div>
-            <div className="text-sm text-yellow-100">달성한 업적</div>
+            <div className="text-6xl font-bold text-yellow-300">{achieved}</div>
+            <div className="text-sm text-yellow-200 font-semibold">달성한 업적</div>
           </div>
         </div>
         {/* 진행률 바 */}
-        <div className="mt-4 bg-white/30 rounded-full h-3">
+        <div className="mt-6 bg-white/10 rounded-full h-4 overflow-hidden border border-white/20">
           <div
-            className="bg-white rounded-full h-3 transition-all duration-300"
+            className="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full h-4 transition-all duration-500 shadow-lg"
             style={{ width: `${(achieved / total) * 100}%` }}
           />
         </div>
       </div>
 
       {/* 카테고리 필터 */}
-      <div className="flex gap-2 overflow-x-auto pb-2">
+      <div className="flex gap-3 overflow-x-auto pb-2">
         {Object.entries(categories).map(([key, label]) => (
           <button
             key={key}
             onClick={() => setSelectedCategory(key)}
-            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+            className={`px-5 py-3 rounded-xl text-sm font-bold whitespace-nowrap transition-all duration-300 ${
               selectedCategory === key
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-105'
+                : 'backdrop-blur-sm bg-white/10 border border-white/20 text-white/80 hover:bg-white/20 hover:text-white'
             }`}
           >
             {label}
             {key !== 'all' && grouped[key] && (
-              <span className="ml-2 text-xs">
+              <span className="ml-2 text-xs opacity-80">
                 ({grouped[key].filter(a => a.is_achieved).length}/{grouped[key].length})
               </span>
             )}
@@ -119,7 +119,7 @@ export default function AchievementsPage({ userId }) {
       {/* 업적 목록 */}
       <div className="space-y-4">
         {filteredAchievements.length === 0 ? (
-          <div className="text-center text-gray-500 py-12">
+          <div className="text-center text-white/60 py-12">
             업적이 없습니다.
           </div>
         ) : (
@@ -133,10 +133,10 @@ export default function AchievementsPage({ userId }) {
       </div>
 
       {/* 하단 통계 */}
-      <div className="grid grid-cols-2 gap-4 pt-6 border-t">
-        <div className="text-center">
-          <div className="text-3xl font-bold text-blue-600">{achievedCount}</div>
-          <div className="text-sm text-gray-600">현재 카테고리 달성</div>
+      <div className="grid grid-cols-2 gap-4 pt-6 border-t border-white/10">
+        <div className="text-center backdrop-blur-sm bg-white/10 border border-white/20 rounded-xl p-4">
+          <div className="text-4xl font-bold text-blue-300">{achievedCount}</div>
+          <div className="text-sm text-white/70 font-semibold">현재 카테고리 달성</div>
         </div>
         <div className="text-center">
           <div className="text-3xl font-bold text-purple-600">
@@ -169,19 +169,19 @@ function AchievementCard({ achievement }) {
 
   return (
     <div
-      className={`bg-white rounded-lg p-4 shadow-sm border-2 transition-all ${
+      className={`backdrop-blur-xl rounded-xl p-5 shadow-xl border-2 transition-all duration-300 ${
         isAchieved
-          ? `${tierBorder[achievement.tier]} shadow-md`
-          : 'border-gray-200 opacity-60'
+          ? `bg-white/10 ${tierBorder[achievement.tier]} shadow-2xl hover:scale-105`
+          : 'bg-white/5 border-white/10 opacity-50'
       }`}
     >
       <div className="flex items-start space-x-4">
         {/* 아이콘 */}
         <div
-          className={`flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center text-3xl ${
+          className={`flex-shrink-0 w-20 h-20 rounded-full flex items-center justify-center text-4xl ${
             isAchieved
-              ? `bg-gradient-to-br ${tierColors[achievement.tier]} text-white shadow-lg`
-              : 'bg-gray-200 grayscale'
+              ? `bg-gradient-to-br ${tierColors[achievement.tier]} text-white shadow-lg shadow-${achievement.tier}-500/50`
+              : 'bg-white/10 grayscale'
           }`}
         >
           {isAchieved ? achievement.icon : <Lock className="w-8 h-8 text-gray-400" />}
@@ -189,29 +189,29 @@ function AchievementCard({ achievement }) {
 
         {/* 내용 */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-1">
-            <h3 className={`font-bold text-lg ${isAchieved ? 'text-gray-900' : 'text-gray-500'}`}>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className={`font-bold text-xl ${isAchieved ? 'text-white' : 'text-white/40'}`}>
               {achievement.name}
             </h3>
             <div className="flex items-center space-x-2">
               {isAchieved && (
-                <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                <Star className="w-6 h-6 text-yellow-400 fill-current" />
               )}
-              <span className={`text-sm font-medium ${isAchieved ? 'text-blue-600' : 'text-gray-400'}`}>
+              <span className={`text-sm font-bold ${isAchieved ? 'text-blue-300' : 'text-white/30'}`}>
                 {Number(achievement.points)}P
               </span>
             </div>
           </div>
 
-          <p className={`text-sm mb-2 ${isAchieved ? 'text-gray-600' : 'text-gray-400'}`}>
+          <p className={`text-sm mb-3 ${isAchieved ? 'text-white/80' : 'text-white/30'}`}>
             {achievement.description}
           </p>
 
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <span className={`text-xs px-2 py-1 rounded-full ${
+              <span className={`text-xs px-3 py-1 rounded-full font-semibold ${
                 isAchieved
-                  ? 'bg-blue-100 text-blue-700'
+                  ? 'bg-blue-500/30 text-blue-200 border border-blue-400/30'
                   : 'bg-gray-100 text-gray-600'
               }`}>
                 {getCategoryLabel(achievement.category)}
