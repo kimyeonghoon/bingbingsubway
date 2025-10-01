@@ -114,17 +114,17 @@ function ChallengePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
       <div className="container mx-auto px-4 py-8">
         <header className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">🚇 빙빙 지하철</h1>
-          <p className="text-gray-600">역 방문 도전 진행 중</p>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">빙빙 지하철</h1>
+          <p className="text-gray-700 font-medium">역 방문 도전 진행 중</p>
         </header>
 
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-gray-200">
+          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-6 mb-6 border-2 border-blue-200">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 {selectedLine} 도전
               </h2>
               <Timer startTime={challengeStartTime} />
@@ -133,16 +133,16 @@ function ChallengePage() {
             <ProgressBar completed={completedCount} total={challengeStations.length} />
 
             <div className="mt-6 text-center">
-              <p className="text-gray-700 text-lg font-medium">
+              <p className="text-gray-800 text-lg font-semibold">
                 {completedCount === challengeStations.length
                   ? '🎉 역 방문 완료!'
-                  : '선택된 역을 방문하세요!'}
+                  : '📍 선택된 역을 방문하세요'}
               </p>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">방문할 역</h3>
+          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-6 border-2 border-purple-200">
+            <h3 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">방문할 역</h3>
 
             <div className="space-y-3">
               {challengeStations.map(station => (
@@ -158,8 +158,9 @@ function ChallengePage() {
 
             <button
               onClick={() => navigate('/')}
-              className="w-full mt-6 py-3 bg-gray-600 text-white rounded-lg font-bold
-                         hover:bg-gray-700 transition-colors"
+              className="w-full mt-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-2xl font-bold
+                         hover:from-gray-700 hover:to-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl
+                         transform hover:scale-105"
             >
               메인으로
             </button>

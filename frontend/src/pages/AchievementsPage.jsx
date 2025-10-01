@@ -67,28 +67,28 @@ export default function AchievementsPage({ userId }) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-6">
+    <div className="max-w-4xl mx-auto p-4 space-y-6 bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 min-h-screen">
       {/* 헤더 */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-lg">
+      <div className="bg-white/90 backdrop-blur-sm border-2 border-yellow-300 rounded-2xl p-8 shadow-xl">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold mb-3 flex items-center text-gray-900">
+            <h1 className="text-4xl font-bold mb-3 flex items-center bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
               <Trophy className="w-10 h-10 mr-3 text-yellow-600" />
               업적
             </h1>
-            <p className="text-gray-600 text-lg font-semibold">
+            <p className="text-gray-700 text-lg font-semibold">
               {achieved} / {total} 달성 ({((achieved / total) * 100).toFixed(1)}%)
             </p>
           </div>
           <div className="text-right">
-            <div className="text-6xl font-bold text-yellow-600">{achieved}</div>
+            <div className="text-6xl font-bold bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">{achieved}</div>
             <div className="text-sm text-gray-600 font-semibold">달성한 업적</div>
           </div>
         </div>
         {/* 진행률 바 */}
-        <div className="mt-6 bg-gray-200 rounded-full h-4 overflow-hidden">
+        <div className="mt-6 bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner">
           <div
-            className="bg-yellow-500 rounded-full h-4 transition-all duration-500"
+            className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full h-4 transition-all duration-500"
             style={{ width: `${(achieved / total) * 100}%` }}
           />
         </div>
@@ -100,10 +100,10 @@ export default function AchievementsPage({ userId }) {
           <button
             key={key}
             onClick={() => setSelectedCategory(key)}
-            className={`px-5 py-3 rounded-xl text-sm font-bold whitespace-nowrap transition-colors duration-200 ${
+            className={`px-5 py-3 rounded-xl text-sm font-bold whitespace-nowrap transition-all duration-300 transform hover:scale-105 ${
               selectedCategory === key
-                ? 'bg-blue-600 text-white shadow-lg'
-                : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg'
+                : 'bg-white border-2 border-yellow-200 text-gray-700 hover:bg-yellow-50'
             }`}
           >
             {label}
@@ -133,16 +133,16 @@ export default function AchievementsPage({ userId }) {
       </div>
 
       {/* 하단 통계 */}
-      <div className="grid grid-cols-2 gap-4 pt-6 border-t border-gray-200">
-        <div className="text-center bg-white border border-gray-200 rounded-xl p-4 shadow-lg">
-          <div className="text-4xl font-bold text-blue-600">{achievedCount}</div>
-          <div className="text-sm text-gray-600 font-semibold">현재 카테고리 달성</div>
+      <div className="grid grid-cols-2 gap-4 pt-6">
+        <div className="text-center bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-300 rounded-xl p-5 shadow-lg">
+          <div className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">{achievedCount}</div>
+          <div className="text-sm text-gray-700 font-semibold">현재 카테고리 달성</div>
         </div>
-        <div className="text-center bg-white border border-gray-200 rounded-xl p-4 shadow-lg">
-          <div className="text-4xl font-bold text-purple-600">
+        <div className="text-center bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-300 rounded-xl p-5 shadow-lg">
+          <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
             {achievements.reduce((sum, a) => sum + (a.is_achieved ? a.points : 0), 0)}
           </div>
-          <div className="text-sm text-gray-600 font-semibold">획득한 포인트</div>
+          <div className="text-sm text-gray-700 font-semibold">획득한 포인트</div>
         </div>
       </div>
     </div>
@@ -169,7 +169,7 @@ function AchievementCard({ achievement }) {
 
   return (
     <div
-      className={`bg-white rounded-xl p-5 shadow-lg border-2 transition-colors duration-200 ${
+      className={`bg-white rounded-xl p-5 shadow-lg border-2 transition-all duration-300 ${
         isAchieved
           ? `${tierBorder[achievement.tier]}`
           : 'border-gray-200 opacity-50'

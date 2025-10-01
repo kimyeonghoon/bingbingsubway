@@ -12,24 +12,6 @@ export default function ProfilePage({ userId }) {
 
   useEffect(() => {
     loadProfile();
-
-    // 색상 디버깅
-    console.log('🎨 ProfilePage 색상 체크:');
-    console.log('%c 트로피 (노란색)', 'color: #CA8A04; font-weight: bold; font-size: 16px');
-    console.log('%c 타겟 (파란색)', 'color: #2563EB; font-weight: bold; font-size: 16px');
-    console.log('%c 연승 (초록색)', 'color: #16A34A; font-weight: bold; font-size: 16px');
-    console.log('%c 방문역 (보라색)', 'color: #9333EA; font-weight: bold; font-size: 16px');
-    console.log('진행률 바 - 파란색: #2563EB, 완료: #16A34A');
-
-    // DOM 직접 확인
-    setTimeout(() => {
-      const icons = document.querySelectorAll('svg');
-      console.log('📍 SVG 아이콘 개수:', icons.length);
-      icons.forEach((icon, i) => {
-        const style = window.getComputedStyle(icon);
-        console.log(`아이콘 ${i}: color=${style.color}, fill=${style.fill}`);
-      });
-    }, 1000);
   }, [userId]);
 
   const loadProfile = async () => {
@@ -82,16 +64,17 @@ export default function ProfilePage({ userId }) {
   );
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-6">
+    <div className="max-w-4xl mx-auto p-4 space-y-6 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 min-h-screen">
       {/* 프로필 헤더 */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-lg">
-        <div className="flex items-center space-x-4 mb-6">
-          <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ backgroundColor: '#DBEAFE' }}>
-            <User className="w-10 h-10" style={{ color: '#2563EB' }} />
+      <div className="relative overflow-hidden rounded-3xl p-8 shadow-2xl bg-gradient-to-br from-blue-600 to-purple-600">
+        <div className="absolute top-0 right-0 w-64 h-64 rounded-full opacity-20 bg-white blur-3xl"></div>
+        <div className="relative z-10 flex items-center space-x-4 mb-6">
+          <div className="w-24 h-24 rounded-full flex items-center justify-center bg-white/20 backdrop-blur-sm border-2 border-white/30">
+            <User className="w-12 h-12 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold mb-1 text-gray-900">사용자 {userId}</h1>
-            <p className="text-gray-600">
+            <h1 className="text-4xl font-bold mb-1 text-white">사용자 {userId}</h1>
+            <p className="text-blue-100 text-lg">
               {stats?.first_challenge_at
                 ? `${new Date(stats.first_challenge_at).toLocaleDateString()} 가입`
                 : '신규 사용자'}
@@ -100,24 +83,24 @@ export default function ProfilePage({ userId }) {
         </div>
 
         {/* 주요 통계 */}
-        <div className="grid grid-cols-4 gap-4">
+        <div className="relative z-10 grid grid-cols-4 gap-4">
           <StatBox
-            icon={<Trophy className="w-5 h-5" style={{ color: '#CA8A04' }} />}
+            icon={<Trophy className="w-6 h-6 text-yellow-600" />}
             label="총 점수"
             value={stats?.total_score?.toLocaleString() || 0}
           />
           <StatBox
-            icon={<Target className="w-5 h-5" style={{ color: '#2563EB' }} />}
+            icon={<Target className="w-6 h-6 text-blue-600" />}
             label="성공률"
             value={`${stats?.success_rate?.toFixed(1) || 0}%`}
           />
           <StatBox
-            icon={<TrendingUp className="w-5 h-5" style={{ color: '#16A34A' }} />}
+            icon={<TrendingUp className="w-6 h-6 text-green-600" />}
             label="최대 연승"
             value={stats?.max_streak || 0}
           />
           <StatBox
-            icon={<MapPin className="w-5 h-5" style={{ color: '#9333EA' }} />}
+            icon={<MapPin className="w-6 h-6 text-purple-600" />}
             label="방문 역"
             value={stats?.unique_visited_stations || 0}
           />
@@ -126,21 +109,21 @@ export default function ProfilePage({ userId }) {
 
       {/* 대표 업적 */}
       {topAchievements.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-lg">
-          <h2 className="text-xl font-bold mb-4 flex items-center text-gray-900">
-            <Award className="w-5 h-5 mr-2" style={{ color: '#CA8A04' }} />
+        <div className="bg-white/90 backdrop-blur-sm border-2 border-yellow-300 rounded-2xl p-6 shadow-xl">
+          <h2 className="text-xl font-bold mb-4 flex items-center bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
+            <Award className="w-5 h-5 mr-2 text-yellow-600" />
             대표 업적
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {topAchievements.map(achievement => (
               <div
                 key={achievement.id}
-                className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-4 border-2 border-yellow-400"
+                className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-4 border-2 border-yellow-400 shadow-lg transform hover:scale-105 transition-all duration-300"
               >
                 <div className="text-4xl mb-2">{achievement.icon}</div>
                 <div className="font-bold text-gray-900 mb-1">{achievement.name}</div>
                 <div className="text-sm text-gray-600 mb-2">{achievement.description}</div>
-                <div className="text-xs text-yellow-700 font-medium">
+                <div className="text-xs text-yellow-700 font-bold">
                   +{Number(achievement.points)} 포인트
                 </div>
               </div>
@@ -151,9 +134,9 @@ export default function ProfilePage({ userId }) {
 
       {/* 가장 많이 방문한 역 */}
       {visitedStations.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-lg">
-          <h2 className="text-xl font-bold mb-4 flex items-center text-gray-900">
-            <MapPin className="w-5 h-5 mr-2" style={{ color: '#16A34A' }} />
+        <div className="bg-white/90 backdrop-blur-sm border-2 border-green-300 rounded-2xl p-6 shadow-xl">
+          <h2 className="text-xl font-bold mb-4 flex items-center bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+            <MapPin className="w-5 h-5 mr-2 text-green-600" />
             가장 많이 방문한 역 TOP 5
           </h2>
           <div className="space-y-3">
@@ -187,9 +170,9 @@ export default function ProfilePage({ userId }) {
 
       {/* 완료한 노선 */}
       {completedLines.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-lg">
-          <h2 className="text-xl font-bold mb-4 flex items-center text-gray-900">
-            <Star className="w-5 h-5 mr-2" style={{ color: '#9333EA' }} />
+        <div className="bg-white/90 backdrop-blur-sm border-2 border-purple-300 rounded-2xl p-6 shadow-xl">
+          <h2 className="text-xl font-bold mb-4 flex items-center bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <Star className="w-5 h-5 mr-2 text-purple-600" />
             완료한 노선
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -214,9 +197,9 @@ export default function ProfilePage({ userId }) {
       )}
 
       {/* 전체 통계 */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-lg">
-        <h2 className="text-xl font-bold mb-4 flex items-center text-gray-900">
-          <Calendar className="w-5 h-5 mr-2" style={{ color: '#2563EB' }} />
+      <div className="bg-white/90 backdrop-blur-sm border-2 border-blue-300 rounded-2xl p-6 shadow-xl">
+        <h2 className="text-xl font-bold mb-4 flex items-center bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+          <Calendar className="w-5 h-5 mr-2 text-blue-600" />
           전체 통계
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -249,30 +232,28 @@ export default function ProfilePage({ userId }) {
 
       {/* 노선별 진행률 */}
       {lineStats.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-lg">
-          <h2 className="text-xl font-bold mb-4 text-gray-900">노선별 진행률</h2>
+        <div className="bg-white/90 backdrop-blur-sm border-2 border-indigo-300 rounded-2xl p-6 shadow-xl">
+          <h2 className="text-xl font-bold mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">노선별 진행률</h2>
           <div className="space-y-4">
             {lineStats.map(line => {
               const percentage = (line.visited_count / line.total_count) * 100;
-              const barColor = percentage === 100 ? 'bg-green-600' : 'bg-blue-600';
-              console.log(`📈 진행률 바: ${line.line_num} - ${percentage.toFixed(1)}%, 색상: ${barColor}`);
+              const isComplete = percentage === 100;
 
               return (
                 <div key={line.line_num}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-gray-900">{line.line_num}</span>
-                    <span className="text-sm text-gray-600">
+                    <span className="font-bold text-gray-900">{line.line_num}</span>
+                    <span className="text-sm text-gray-600 font-semibold">
                       {line.visited_count} / {line.total_count} ({percentage.toFixed(1)}%)
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3">
+                  <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
                     <div
-                      className="h-3 rounded-full transition-all duration-300"
-                      style={{
-                        width: `${percentage}%`,
-                        backgroundColor: percentage === 100 ? '#16A34A' : '#2563EB'
-                      }}
-                    />
+                      className={`h-3 rounded-full transition-all duration-500 ${
+                        isComplete ? 'bg-gradient-to-r from-green-600 to-emerald-600' : 'bg-gradient-to-r from-blue-600 to-purple-600'
+                      }`}
+                      style={{ width: `${percentage}%` }}
+                    ></div>
                   </div>
                 </div>
               );
@@ -285,16 +266,11 @@ export default function ProfilePage({ userId }) {
 }
 
 function StatBox({ icon, label, value }) {
-  // 렌더링 시 색상 체크
-  useEffect(() => {
-    console.log(`📊 StatBox 렌더: ${label}`, { value });
-  }, [label, value]);
-
   return (
-    <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-center">
-      <div className="flex justify-center mb-1">{icon}</div>
-      <div className="text-2xl font-bold mb-1 text-gray-900">{value}</div>
-      <div className="text-xs text-gray-600">{label}</div>
+    <div className="relative overflow-hidden rounded-2xl p-4 text-center bg-white/20 backdrop-blur-sm border border-white/30 hover:bg-white/30 transition-all duration-300">
+      <div className="flex justify-center mb-2">{icon}</div>
+      <div className="text-3xl font-bold mb-1 text-white">{value}</div>
+      <div className="text-sm text-white/90 font-medium">{label}</div>
     </div>
   );
 }

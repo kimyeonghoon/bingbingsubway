@@ -76,24 +76,24 @@ export default function LeaderboardPage({ userId }) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-6">
+    <div className="max-w-4xl mx-auto p-4 space-y-6 bg-gradient-to-br from-purple-50 via-pink-50 to-red-50 min-h-screen">
       {/* 헤더 */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-lg">
-        <h1 className="text-3xl font-bold mb-2 flex items-center text-gray-900">
+      <div className="bg-white/90 backdrop-blur-sm border-2 border-purple-300 rounded-2xl p-6 shadow-xl">
+        <h1 className="text-3xl font-bold mb-2 flex items-center bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
           <Crown className="w-8 h-8 mr-2 text-purple-600" />
           랭킹
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-700 font-medium">
           전체 {total.toLocaleString()}명의 플레이어
         </p>
       </div>
 
       {/* 내 랭킹 */}
       {myRank && myRank.stats && (
-        <div className="bg-blue-50 border-2 border-blue-300 rounded-xl p-4">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-400 rounded-xl p-4 shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-blue-600 font-medium mb-1">내 순위</div>
+              <div className="text-sm text-blue-700 font-bold mb-1">내 순위</div>
               <div className="grid grid-cols-4 gap-4 text-sm">
                 <div>
                   <div className="text-gray-600">점수</div>
@@ -123,20 +123,20 @@ export default function LeaderboardPage({ userId }) {
         <div className="flex gap-2">
           <button
             onClick={() => setPeriod('all')}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors duration-200 ${
+            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 transform hover:scale-105 ${
               period === 'all'
-                ? 'bg-purple-600 text-white shadow-lg'
-                : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                : 'bg-white border-2 border-purple-200 text-gray-700 hover:bg-purple-50'
             }`}
           >
             전체
           </button>
           <button
             onClick={() => setPeriod('weekly')}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors duration-200 ${
+            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 transform hover:scale-105 ${
               period === 'weekly'
-                ? 'bg-purple-600 text-white shadow-lg'
-                : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                : 'bg-white border-2 border-purple-200 text-gray-700 hover:bg-purple-50'
             }`}
           >
             주간
@@ -150,10 +150,10 @@ export default function LeaderboardPage({ userId }) {
               <button
                 key={key}
                 onClick={() => setType(key)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors duration-200 flex items-center gap-2 ${
+                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 transform hover:scale-105 ${
                   type === key
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg'
+                    : 'bg-white border-2 border-blue-200 text-gray-700 hover:bg-blue-50'
                 }`}
               >
                 {icon}
@@ -165,7 +165,7 @@ export default function LeaderboardPage({ userId }) {
       </div>
 
       {/* 랭킹 목록 */}
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden">
+      <div className="bg-white/90 backdrop-blur-sm border-2 border-purple-200 rounded-2xl shadow-xl overflow-hidden">
         {rankings.length === 0 ? (
           <div className="text-center text-gray-500 py-12">
             랭킹 데이터가 없습니다.
@@ -247,7 +247,7 @@ function RankingItem({ user, rank, type, period, isMe }) {
 
   return (
     <div
-      className={`p-4 hover:bg-gray-50 transition-colors duration-200 ${
+      className={`p-4 hover:bg-gray-50 transition-all duration-300 ${
         isMe ? 'bg-blue-50 border-l-4 border-blue-600' : ''
       }`}
     >

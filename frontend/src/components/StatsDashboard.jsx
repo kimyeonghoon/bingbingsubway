@@ -52,43 +52,51 @@ export default function StatsDashboard({ userId }) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-6">
+    <div className="max-w-4xl mx-auto p-4 space-y-6 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 min-h-screen">
       {/* 기본 통계 카드 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
           icon={<Target className="w-6 h-6 text-blue-600" />}
           label="총 도전"
           value={stats?.total_challenges || 0}
+          gradient="from-blue-50 to-blue-100"
+          borderColor="border-blue-300"
         />
         <StatCard
           icon={<Trophy className="w-6 h-6 text-yellow-600" />}
           label="성공률"
           value={`${stats?.success_rate?.toFixed(1) || 0}%`}
+          gradient="from-yellow-50 to-yellow-100"
+          borderColor="border-yellow-300"
         />
         <StatCard
           icon={<Flame className="w-6 h-6 text-orange-600" />}
           label="최대 연승"
           value={stats?.max_streak || 0}
+          gradient="from-orange-50 to-orange-100"
+          borderColor="border-orange-300"
         />
         <StatCard
           icon={<MapPin className="w-6 h-6 text-green-600" />}
           label="방문 역"
           value={stats?.unique_visited_stations || 0}
+          gradient="from-green-50 to-green-100"
+          borderColor="border-green-300"
         />
       </div>
 
       {/* 점수 및 시간 */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-lg">
+      <div className="bg-gradient-to-br from-white to-purple-50 border-2 border-purple-200 rounded-2xl p-6 shadow-xl">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-sm text-gray-600 mb-2 font-semibold">총 점수</div>
-            <div className="text-4xl font-bold text-gray-900">
+            <div className="text-sm text-purple-600 mb-2 font-bold">총 점수</div>
+            <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
               {stats?.total_score?.toLocaleString() || 0}
             </div>
           </div>
           <div className="text-right">
-            <div className="text-sm text-gray-600 mb-2 font-semibold">평균 시간</div>
-            <div className="text-3xl font-bold text-gray-900">
+            <div className="text-sm text-blue-600 mb-2 font-bold">평균 시간</div>
+            <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
               {stats?.average_time ? `${Math.floor(stats.average_time / 60)}분` : '-'}
             </div>
           </div>
@@ -97,8 +105,8 @@ export default function StatsDashboard({ userId }) {
 
       {/* 노선별 통계 */}
       {lineStats.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-lg">
-          <h2 className="text-2xl font-bold mb-6 flex items-center text-gray-900">
+        <div className="bg-white/90 backdrop-blur-sm border-2 border-blue-200 rounded-2xl p-6 shadow-xl">
+          <h2 className="text-2xl font-bold mb-6 flex items-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             <TrendingUp className="w-6 h-6 mr-2 text-blue-600" />
             노선별 통계
           </h2>
@@ -112,9 +120,9 @@ export default function StatsDashboard({ userId }) {
 
       {/* 최근 활동 */}
       {recentActivities.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-lg">
-          <h2 className="text-2xl font-bold mb-6 flex items-center text-gray-900">
-            <Clock className="w-6 h-6 mr-2 text-blue-600" />
+        <div className="bg-white/90 backdrop-blur-sm border-2 border-green-200 rounded-2xl p-6 shadow-xl">
+          <h2 className="text-2xl font-bold mb-6 flex items-center bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+            <Clock className="w-6 h-6 mr-2 text-green-600" />
             최근 활동
           </h2>
           <div className="space-y-3">
@@ -128,9 +136,9 @@ export default function StatsDashboard({ userId }) {
   );
 }
 
-function StatCard({ icon, label, value }) {
+function StatCard({ icon, label, value, gradient, borderColor }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-lg hover:shadow-xl transition-colors duration-200">
+    <div className={`bg-gradient-to-br ${gradient} border-2 ${borderColor} rounded-xl p-5 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105`}>
       <div className="flex items-center justify-between mb-3">
         {icon}
       </div>
@@ -151,13 +159,13 @@ function LineStatBar({ line }) {
           {line.visited_count} / {line.total_count}
         </span>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-3">
+      <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
         <div
-          className="bg-blue-600 h-3 rounded-full transition-all duration-500"
+          className="bg-gradient-to-r from-blue-600 to-purple-600 h-3 rounded-full transition-all duration-500"
           style={{ width: `${percentage}%` }}
         />
       </div>
-      <div className="text-xs text-gray-500 mt-1 font-semibold">
+      <div className="text-xs text-purple-600 mt-1 font-bold">
         {percentage.toFixed(1)}% 완료
       </div>
     </div>
