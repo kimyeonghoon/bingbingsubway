@@ -76,9 +76,11 @@ async function getLeaderboard(req, res, next) {
 async function getWeeklyLeaderboard(req, res, next) {
   try {
     const { limit = 100 } = req.query;
+    const parsedLimit = parseInt(limit);
 
     // 이번 주의 도전 기록 기준 랭킹
-    const [rankings] = await pool.execute(
+    // BIGINT user_id와 prepared statement 호환성 문제로 pool.query 사용
+    const [rankings] = await pool.query(
       `SELECT
         c.user_id,
         COUNT(*) as weekly_challenges,
@@ -90,8 +92,7 @@ async function getWeeklyLeaderboard(req, res, next) {
       GROUP BY c.user_id
       HAVING weekly_challenges > 0
       ORDER BY weekly_score DESC, weekly_success_rate DESC
-      LIMIT ?`,
-      [parseInt(limit)]
+      LIMIT ${parsedLimit}`
     );
 
     // 순위 추가
@@ -103,7 +104,7 @@ async function getWeeklyLeaderboard(req, res, next) {
     res.json({
       rankings: rankingsWithRank,
       period: 'weekly',
-      limit: parseInt(limit)
+      limit: parsedLimit
     });
   } catch (error) {
     next(error);
