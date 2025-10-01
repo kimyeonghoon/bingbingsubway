@@ -140,8 +140,248 @@ async function getChallengeStations(req, res, next) {
   }
 }
 
+/**
+ * 도전 완료 처리
+ * POST /api/challenges/:id/complete
+ */
+async function completeChallenge(req, res, next) {
+  const connection = await pool.getConnection();
+
+  try {
+    const { id } = req.params;
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'userId는 필수입니다.' });
+    }
+
+    await connection.beginTransaction();
+
+    // 1. 도전 정보 조회
+    const [challenges] = await connection.execute(
+      'SELECT * FROM challenges WHERE id = ? AND user_id = ?',
+      [id, userId]
+    );
+
+    if (challenges.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ error: '도전을 찾을 수 없습니다.' });
+    }
+
+    const challenge = challenges[0];
+
+    if (challenge.status === 'completed' || challenge.status === 'failed') {
+      await connection.rollback();
+      return res.status(400).json({ error: '이미 완료되었거나 실패한 도전입니다.' });
+    }
+
+    // 2. 방문 확인한 역 개수 확인
+    const [visitCounts] = await connection.execute(
+      'SELECT COUNT(*) as verified_count FROM visits WHERE challenge_id = ? AND is_verified = TRUE',
+      [id]
+    );
+
+    const verifiedCount = visitCounts[0].verified_count;
+
+    if (verifiedCount < challenge.total_stations) {
+      await connection.rollback();
+      return res.status(400).json({
+        error: '모든 역을 방문하지 않았습니다.',
+        verified: verifiedCount,
+        total: challenge.total_stations
+      });
+    }
+
+    // 3. 도전 시간 계산
+    const startTime = new Date(challenge.started_at);
+    const endTime = new Date();
+    const timeTaken = Math.floor((endTime - startTime) / 1000); // 초 단위
+
+    // 4. 점수 계산 (기본 100점 + 빠른 완료 보너스)
+    let score = 100;
+    if (timeTaken < 600) score += 200; // 10분 이내
+    else if (timeTaken < 900) score += 100; // 15분 이내
+    else if (timeTaken < 1200) score += 50; // 20분 이내
+    else if (timeTaken < 1800) score += 30; // 30분 이내
+
+    // 5. 도전 상태 업데이트
+    await connection.execute(
+      `UPDATE challenges SET
+        status = 'completed',
+        completed_at = NOW(),
+        time_taken = ?,
+        score = ?,
+        completed_stations = total_stations
+      WHERE id = ?`,
+      [timeTaken, score, id]
+    );
+
+    // 6. 사용자 통계 업데이트
+    const { updateUserStats } = require('./userStatsController');
+    await updateUserStats(userId, {
+      isSuccess: true,
+      timeTaken,
+      score,
+      visitedStations: challenge.total_stations
+    });
+
+    // 7. user_visited_stations 업데이트
+    const [visitedStations] = await connection.execute(
+      'SELECT DISTINCT station_id FROM visits WHERE challenge_id = ? AND is_verified = TRUE',
+      [id]
+    );
+
+    for (const visit of visitedStations) {
+      await connection.execute(
+        `INSERT INTO user_visited_stations (user_id, station_id, visit_count, first_visit_at, last_visit_at)
+         VALUES (?, ?, 1, NOW(), NOW())
+         ON DUPLICATE KEY UPDATE
+           visit_count = visit_count + 1,
+           last_visit_at = NOW()`,
+        [userId, visit.station_id]
+      );
+    }
+
+    // 8. 업적 체크
+    const { checkAndUpdateAchievements } = require('./achievementController');
+    const newAchievements = await checkAndUpdateAchievements(userId);
+
+    await connection.commit();
+
+    res.json({
+      success: true,
+      challengeId: id,
+      status: 'completed',
+      timeTaken,
+      score,
+      newAchievements: newAchievements.map(a => ({
+        id: a.id,
+        name: a.name,
+        icon: a.icon,
+        points: a.points
+      }))
+    });
+
+  } catch (error) {
+    await connection.rollback();
+    next(error);
+  } finally {
+    connection.release();
+  }
+}
+
+/**
+ * 도전 실패 처리
+ * POST /api/challenges/:id/fail
+ */
+async function failChallenge(req, res, next) {
+  const connection = await pool.getConnection();
+
+  try {
+    const { id } = req.params;
+    const { userId, reason = 'timeout' } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'userId는 필수입니다.' });
+    }
+
+    await connection.beginTransaction();
+
+    // 1. 도전 정보 조회
+    const [challenges] = await connection.execute(
+      'SELECT * FROM challenges WHERE id = ? AND user_id = ?',
+      [id, userId]
+    );
+
+    if (challenges.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ error: '도전을 찾을 수 없습니다.' });
+    }
+
+    const challenge = challenges[0];
+
+    if (challenge.status === 'completed' || challenge.status === 'failed') {
+      await connection.rollback();
+      return res.status(400).json({ error: '이미 완료되었거나 실패한 도전입니다.' });
+    }
+
+    // 2. 도전 시간 계산
+    const startTime = new Date(challenge.started_at);
+    const endTime = new Date();
+    const timeTaken = Math.floor((endTime - startTime) / 1000);
+
+    // 3. 방문한 역 개수 확인
+    const [visitCounts] = await connection.execute(
+      'SELECT COUNT(*) as verified_count FROM visits WHERE challenge_id = ? AND is_verified = TRUE',
+      [id]
+    );
+
+    const verifiedCount = visitCounts[0].verified_count;
+
+    // 4. 도전 상태 업데이트
+    await connection.execute(
+      `UPDATE challenges SET
+        status = 'failed',
+        completed_at = NOW(),
+        time_taken = ?,
+        score = 0,
+        completed_stations = ?
+      WHERE id = ?`,
+      [timeTaken, verifiedCount, id]
+    );
+
+    // 5. 사용자 통계 업데이트
+    const { updateUserStats } = require('./userStatsController');
+    await updateUserStats(userId, {
+      isSuccess: false,
+      timeTaken,
+      score: 0,
+      visitedStations: verifiedCount
+    });
+
+    // 6. user_visited_stations 업데이트 (방문한 역만)
+    if (verifiedCount > 0) {
+      const [visitedStations] = await connection.execute(
+        'SELECT DISTINCT station_id FROM visits WHERE challenge_id = ? AND is_verified = TRUE',
+        [id]
+      );
+
+      for (const visit of visitedStations) {
+        await connection.execute(
+          `INSERT INTO user_visited_stations (user_id, station_id, visit_count, first_visit_at, last_visit_at)
+           VALUES (?, ?, 1, NOW(), NOW())
+           ON DUPLICATE KEY UPDATE
+             visit_count = visit_count + 1,
+             last_visit_at = NOW()`,
+          [userId, visit.station_id]
+        );
+      }
+    }
+
+    await connection.commit();
+
+    res.json({
+      success: true,
+      challengeId: id,
+      status: 'failed',
+      reason,
+      timeTaken,
+      verifiedStations: verifiedCount,
+      totalStations: challenge.total_stations
+    });
+
+  } catch (error) {
+    await connection.rollback();
+    next(error);
+  } finally {
+    connection.release();
+  }
+}
+
 module.exports = {
   createChallenge,
   getChallengesByUser,
-  getChallengeStations
+  getChallengeStations,
+  completeChallenge,
+  failChallenge
 };
