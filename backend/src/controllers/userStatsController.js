@@ -123,13 +123,13 @@ async function getRecentActivities(req, res, next) {
     const { userId } = req.params;
     const { limit = 20 } = req.query;
 
+    const parsedLimit = parseInt(limit);
+
     const [activities] = await pool.execute(
       `SELECT
         c.id as challenge_id,
         c.line_num,
         c.status,
-        c.score,
-        c.time_taken,
         c.total_stations,
         c.completed_stations,
         c.started_at,
@@ -139,8 +139,8 @@ async function getRecentActivities(req, res, next) {
       LEFT JOIN stations s ON c.final_station_id = s.id
       WHERE c.user_id = ?
       ORDER BY c.started_at DESC
-      LIMIT ?`,
-      [userId, parseInt(limit)]
+      LIMIT ${parsedLimit}`,
+      [userId]
     );
 
     res.json(activities);

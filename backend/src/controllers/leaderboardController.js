@@ -120,7 +120,7 @@ async function getUserRank(req, res, next) {
 
     // 전체 점수 순위
     const [scoreRank] = await pool.execute(
-      `SELECT COUNT(*) + 1 as rank
+      `SELECT COUNT(*) + 1 as user_rank
        FROM user_stats
        WHERE total_score > (SELECT total_score FROM user_stats WHERE user_id = ?)
        AND total_challenges > 0`,
@@ -129,7 +129,7 @@ async function getUserRank(req, res, next) {
 
     // 스트릭 순위
     const [streakRank] = await pool.execute(
-      `SELECT COUNT(*) + 1 as rank
+      `SELECT COUNT(*) + 1 as user_rank
        FROM user_stats
        WHERE max_streak > (SELECT max_streak FROM user_stats WHERE user_id = ?)
        AND total_challenges > 0`,
@@ -138,7 +138,7 @@ async function getUserRank(req, res, next) {
 
     // 방문 역 수 순위
     const [stationRank] = await pool.execute(
-      `SELECT COUNT(*) + 1 as rank
+      `SELECT COUNT(*) + 1 as user_rank
        FROM user_stats
        WHERE unique_visited_stations > (SELECT unique_visited_stations FROM user_stats WHERE user_id = ?)
        AND total_challenges > 0`,
@@ -147,7 +147,7 @@ async function getUserRank(req, res, next) {
 
     // 성공률 순위 (최소 10번 이상 도전한 사용자 중)
     const [successRateRank] = await pool.execute(
-      `SELECT COUNT(*) + 1 as rank
+      `SELECT COUNT(*) + 1 as user_rank
        FROM user_stats
        WHERE success_rate > (SELECT success_rate FROM user_stats WHERE user_id = ?)
        AND total_challenges >= 10`,
@@ -176,10 +176,10 @@ async function getUserRank(req, res, next) {
     res.json({
       user_id: userId,
       ranks: {
-        score: scoreRank[0].rank,
-        streak: streakRank[0].rank,
-        stations: stationRank[0].rank,
-        success_rate: successRateRank[0].rank
+        score: scoreRank[0].user_rank,
+        streak: streakRank[0].user_rank,
+        stations: stationRank[0].user_rank,
+        success_rate: successRateRank[0].user_rank
       },
       stats: userStats[0]
     });
