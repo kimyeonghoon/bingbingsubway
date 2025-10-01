@@ -11,12 +11,17 @@ async function createVisit(req, res, next) {
   const connection = await pool.getConnection();
 
   try {
-    const { challengeId, userId, stationId, latitude, longitude } = req.body;
+    const { challengeId, userId, stationId, latitude, longitude, accuracy } = req.body;
 
     if (!challengeId || !userId || !stationId || latitude === undefined || longitude === undefined) {
       return res.status(400).json({
         error: 'challengeId, userId, stationId, latitude, longitude는 필수입니다.'
       });
+    }
+
+    // GPS 정확도 검증 (선택적, 정확도가 너무 낮으면 경고)
+    if (accuracy && accuracy > 50) {
+      console.warn(`GPS accuracy is low: ${accuracy}m for user ${userId}`);
     }
 
     await connection.beginTransaction();
@@ -35,14 +40,23 @@ async function createVisit(req, res, next) {
     const challenge = challenges[0];
 
     // 2. 시간 제한 확인 (3시간)
-    const challengeCreatedAt = new Date(challenge.created_at).getTime();
+    const challengeStartedAt = new Date(challenge.started_at).getTime();
     const now = Date.now();
-    if (now - challengeCreatedAt > TIME_LIMIT) {
+    const elapsedTime = now - challengeStartedAt;
+
+    if (elapsedTime > TIME_LIMIT) {
+      // 자동으로 실패 처리
+      await connection.execute(
+        `UPDATE challenges SET status = 'failed', completed_at = NOW() WHERE id = ?`,
+        [challengeId]
+      );
+
       await connection.rollback();
       return res.status(400).json({
         error: '시간 제한(3시간)이 초과되었습니다.',
         timeLimit: TIME_LIMIT / 1000 / 60, // 분 단위
-        elapsedTime: (now - challengeCreatedAt) / 1000 / 60 // 분 단위
+        elapsedTime: elapsedTime / 1000 / 60, // 분 단위
+        autoFailed: true
       });
     }
 
@@ -73,7 +87,9 @@ async function createVisit(req, res, next) {
         error: '역과의 거리가 너무 멉니다.',
         distance: Math.round(distance),
         maxDistance: VERIFICATION_RADIUS,
-        stationName: station.station_nm
+        stationName: station.station_nm,
+        accuracy: accuracy || null,
+        message: `현재 위치는 ${station.station_nm}에서 약 ${Math.round(distance)}m 떨어져 있습니다. ${VERIFICATION_RADIUS}m 이내로 이동해주세요.`
       });
     }
 
