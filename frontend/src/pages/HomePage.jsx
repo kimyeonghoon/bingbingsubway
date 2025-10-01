@@ -142,9 +142,10 @@ export default function HomePage({ userId }) {
               </p>
               <button
                 onClick={handleGoToChallenge}
+                aria-label="진행 중인 도전 이어하기"
                 className="w-full py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-xl font-bold
                            hover:from-yellow-600 hover:to-orange-600 transition-all duration-300 shadow-md hover:shadow-lg
-                           transform hover:scale-105"
+                           transform hover:scale-105 focus:ring-4 focus:ring-yellow-300 focus:outline-none"
               >
                 도전 이어하기
               </button>
@@ -165,9 +166,11 @@ export default function HomePage({ userId }) {
           <button
             onClick={handleStartChallenge}
             disabled={lines.length === 0}
+            aria-label={challengeId ? '새로운 도전 시작하기' : '도전 시작하기'}
             className="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl font-bold text-lg
                        hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl
-                       disabled:bg-gray-400 disabled:cursor-not-allowed transform hover:scale-105"
+                       disabled:bg-gray-400 disabled:cursor-not-allowed transform hover:scale-105
+                       focus:ring-4 focus:ring-blue-300 focus:outline-none"
           >
             {challengeId ? '새로운 도전 시작' : '도전 시작'}
           </button>
@@ -207,9 +210,10 @@ export default function HomePage({ userId }) {
 
               <button
                 onClick={handleGoToChallenge}
+                aria-label="선택된 역으로 도전 시작하기"
                 className="w-full mt-6 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-2xl font-bold text-lg
                            hover:from-green-700 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl
-                           transform hover:scale-105"
+                           transform hover:scale-105 focus:ring-4 focus:ring-green-300 focus:outline-none"
               >
                 도전 시작하기
               </button>

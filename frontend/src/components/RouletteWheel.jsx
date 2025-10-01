@@ -41,9 +41,9 @@ const RouletteWheel = ({ stations, onStationSelect, isSpinning, onSpinComplete, 
 
   return (
     <div className="flex flex-col items-center justify-center p-8">
-      <div className="relative w-96 h-96 mx-auto">
+      <div className="relative w-96 h-96 mx-auto" role="region" aria-label="룰렛 휠">
         {/* 포인터 (빨간 삼각형) */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 z-20 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 z-20 pointer-events-none" aria-hidden="true">
           <div className="w-0 h-0 border-l-[20px] border-r-[20px] border-t-[40px] border-l-transparent border-r-transparent border-t-red-600"></div>
         </div>
 
@@ -112,12 +112,15 @@ const RouletteWheel = ({ stations, onStationSelect, isSpinning, onSpinComplete, 
           <button
             onClick={handleCenterClick}
             disabled={isSpinning || !stations || stations.length === 0}
+            aria-label={isSpinning ? '룰렛 회전 중' : '룰렛 돌리기'}
+            aria-live="polite"
             className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-600 to-blue-800
                        border-4 border-white shadow-xl flex items-center justify-center
                        transition-all duration-200 transform
                        hover:scale-110 hover:shadow-2xl active:scale-95
                        disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
-                       cursor-pointer group relative overflow-hidden"
+                       cursor-pointer group relative overflow-hidden
+                       focus:ring-4 focus:ring-blue-300 focus:outline-none"
             style={{ zIndex: 30 }}
           >
             {/* 반짝이는 효과 */}
