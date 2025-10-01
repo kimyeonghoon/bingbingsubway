@@ -123,7 +123,7 @@ export default function ProfilePage({ userId }) {
                 <div className="font-bold text-gray-900 mb-1">{achievement.name}</div>
                 <div className="text-sm text-gray-600 mb-2">{achievement.description}</div>
                 <div className="text-xs text-yellow-700 font-medium">
-                  +{achievement.points} 포인트
+                  +{Number(achievement.points)} 포인트
                 </div>
               </div>
             ))}

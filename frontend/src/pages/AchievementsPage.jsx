@@ -198,7 +198,7 @@ function AchievementCard({ achievement }) {
                 <Star className="w-5 h-5 text-yellow-500 fill-current" />
               )}
               <span className={`text-sm font-medium ${isAchieved ? 'text-blue-600' : 'text-gray-400'}`}>
-                {achievement.points}P
+                {Number(achievement.points)}P
               </span>
             </div>
           </div>
