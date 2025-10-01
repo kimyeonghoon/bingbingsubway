@@ -47,15 +47,17 @@ CREATE TABLE IF NOT EXISTS visits (
 -- 4. challenges (도전 기록 테이블)
 CREATE TABLE IF NOT EXISTS challenges (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL,
+  user_id BIGINT NOT NULL,
   line_num VARCHAR(50) NOT NULL COMMENT '도전 노선',
+  total_stations INT NOT NULL DEFAULT 0 COMMENT '총 역 수',
+  completed_stations INT NOT NULL DEFAULT 0 COMMENT '완료한 역 수',
   selected_stations JSON COMMENT '선택된 10개 역 ID 배열',
   final_station_id INT COMMENT '최종 선택된 역 ID',
   status ENUM('in_progress', 'completed', 'failed', 'cancelled') DEFAULT 'in_progress',
+  score INT DEFAULT 0 COMMENT '획득 점수',
+  time_taken INT DEFAULT 0 COMMENT '소요 시간(초)',
   started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   completed_at TIMESTAMP NULL,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (final_station_id) REFERENCES stations(id) ON DELETE SET NULL,
   INDEX idx_user_status (user_id, status),
   INDEX idx_line (line_num)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
