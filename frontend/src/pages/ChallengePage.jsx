@@ -114,23 +114,17 @@ function ChallengePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative">
-      {/* Animated Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-1/2 -left-1/2 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-1/2 -right-1/2 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-      </div>
-
-      <div className="container mx-auto px-4 py-8 relative z-10">
-        <header className="text-center mb-12">
-          <h1 className="text-6xl font-bold text-white mb-4 drop-shadow-lg">🚇 빙빙 지하철</h1>
-          <p className="text-white/80 text-lg">역 방문 도전 진행 중</p>
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        <header className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">🚇 빙빙 지하철</h1>
+          <p className="text-gray-600">역 방문 도전 진행 중</p>
         </header>
 
         <div className="max-w-4xl mx-auto">
-          <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-8 mb-6">
+          <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-gray-200">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-              <h2 className="text-3xl font-bold text-white">
+              <h2 className="text-2xl font-bold text-gray-900">
                 {selectedLine} 도전
               </h2>
               <Timer startTime={challengeStartTime} />
@@ -139,7 +133,7 @@ function ChallengePage() {
             <ProgressBar completed={completedCount} total={challengeStations.length} />
 
             <div className="mt-6 text-center">
-              <p className="text-white/90 text-lg font-semibold">
+              <p className="text-gray-700 text-lg font-medium">
                 {completedCount === challengeStations.length
                   ? '🎉 역 방문 완료!'
                   : '선택된 역을 방문하세요!'}
@@ -147,8 +141,8 @@ function ChallengePage() {
             </div>
           </div>
 
-          <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-8">
-            <h3 className="text-2xl font-bold text-white mb-6">방문할 역</h3>
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">방문할 역</h3>
 
             <div className="space-y-3">
               {challengeStations.map(station => (
