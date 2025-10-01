@@ -42,12 +42,14 @@ function App() {
     if (savedChallenge) {
       try {
         const challenge = JSON.parse(savedChallenge);
-        setStep(challenge.step);
+        // 도전 정보만 복구하고 메인 화면(setup)에 표시
         setSelectedLine(challenge.selectedLine);
         setChallengeId(challenge.challengeId);
         setStations(challenge.stations || []);
         setSelectedStation(challenge.selectedStation || null);
         setChallengeStartTime(challenge.challengeStartTime ? new Date(challenge.challengeStartTime) : null);
+        // step은 항상 setup으로 시작 (진행 중인 도전 정보만 표시)
+        setStep('setup');
       } catch (error) {
         console.error('Failed to restore challenge:', error);
         localStorage.removeItem('bingbing_currentChallenge');
@@ -227,6 +229,29 @@ function App() {
           <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">빙빙 지하철 룰렛</h2>
 
+            {/* 진행 중인 도전이 있으면 표시 */}
+            {challengeId && selectedStation && (
+              <div className="mb-6 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
+                <h3 className="text-sm font-bold text-yellow-900 mb-2">🎯 진행 중인 도전</h3>
+                <p className="text-sm text-gray-700 mb-1">
+                  노선: <span className="font-bold">{selectedLine}</span>
+                </p>
+                <p className="text-sm text-gray-700 mb-3">
+                  역: <span className="font-bold">{selectedStation.station_nm || selectedStation.name}</span>
+                </p>
+                <button
+                  onClick={() => {
+                    const challengeUrl = `/challenge?id=${challengeId}&station=${selectedStation.id}&user=${userId}`;
+                    window.open(challengeUrl, '_blank');
+                  }}
+                  className="w-full py-2 bg-yellow-600 text-white rounded-lg font-semibold
+                             hover:bg-yellow-700 transition-colors"
+                >
+                  도전 이어하기 (새 탭)
+                </button>
+              </div>
+            )}
+
             <div className="mb-6 p-4 bg-blue-50 rounded-lg">
               <p className="text-sm text-gray-700 mb-2">
                 🎲 <span className="font-bold">랜덤 노선</span>이 선택됩니다!
@@ -243,7 +268,7 @@ function App() {
                          hover:bg-blue-700 transition-colors shadow-lg
                          disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              도전 시작
+              {challengeId ? '새로운 도전 시작' : '도전 시작'}
             </button>
           </div>
         )}
@@ -262,6 +287,8 @@ function App() {
               onStationSelect={handleStationSelect}
               isSpinning={isSpinning}
               onSpinComplete={handleSpinComplete}
+              selectedStation={selectedStation}
+              onSpin={() => setIsSpinning(true)}
             />
 
             {selectedStation && !isSpinning && (
@@ -284,36 +311,25 @@ function App() {
                   className="w-full mt-6 py-3 bg-green-600 text-white rounded-lg font-bold text-lg
                              hover:bg-green-700 transition-colors shadow-lg"
                 >
-                  🚇 도전 시작하기
+                  🚇 도전 시작하기 (새 탭)
                 </button>
 
-                <div className="flex gap-3 mt-3">
-                  <button
-                    onClick={handleRetry}
-                    className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-semibold
-                               hover:bg-blue-700 transition-colors"
-                  >
-                    🔄 재도전
-                  </button>
-                  <button
-                    onClick={handleReset}
-                    className="flex-1 py-2 bg-gray-600 text-white rounded-lg font-semibold
-                               hover:bg-gray-700 transition-colors"
-                  >
-                    처음으로
-                  </button>
-                </div>
+                <p className="text-center text-sm text-gray-600 mt-4">
+                  💡 중앙 버튼을 다시 클릭하면 다른 역을 뽑을 수 있습니다
+                </p>
               </div>
             )}
 
+            {/* 룰렛 돌리기 버튼 제거 - 중앙 버튼으로 대체 */}
             {!selectedStation && !isSpinning && (
-              <button
+              <div
                 onClick={() => setIsSpinning(true)}
-                className="w-full mt-6 py-3 bg-blue-600 text-white rounded-lg font-bold text-lg
-                           hover:bg-blue-700 transition-colors shadow-lg"
+                className="w-full mt-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-bold text-lg
+                           hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg cursor-pointer text-center
+                           transform hover:scale-105 active:scale-95"
               >
-                🎡 룰렛 돌리기
-              </button>
+                🎡 룰렛 중앙을 클릭하세요!
+              </div>
             )}
           </div>
         )}

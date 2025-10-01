@@ -22,7 +22,7 @@ describe('Station API', () => {
   describe('GET /api/lines/:lineName/stations', () => {
     test('1호선의 모든 역을 반환해야 함', async () => {
       const response = await request(app)
-        .get('/api/lines/1호선/stations')
+        .get(`/api/lines/${encodeURIComponent('1호선')}/stations`)
         .expect('Content-Type', /json/)
         .expect(200);
 
@@ -35,7 +35,7 @@ describe('Station API', () => {
 
     test('존재하지 않는 노선은 404를 반환해야 함', async () => {
       const response = await request(app)
-        .get('/api/lines/99호선/stations')
+        .get(`/api/lines/${encodeURIComponent('99호선')}/stations`)
         .expect(404);
 
       expect(response.body).toHaveProperty('error');
@@ -46,7 +46,7 @@ describe('Station API', () => {
     test('특정 역의 상세 정보를 반환해야 함', async () => {
       // 먼저 1호선의 첫 번째 역 ID를 가져옴
       const stationsResponse = await request(app)
-        .get('/api/lines/1호선/stations');
+        .get(`/api/lines/${encodeURIComponent('1호선')}/stations`);
 
       const firstStationId = stationsResponse.body[0].id;
 
@@ -73,7 +73,7 @@ describe('Station API', () => {
   describe('GET /api/lines/:lineName/random', () => {
     test('랜덤으로 10개의 역을 반환해야 함', async () => {
       const response = await request(app)
-        .get('/api/lines/1호선/random?count=10')
+        .get(`/api/lines/${encodeURIComponent('1호선')}/random?count=10`)
         .expect('Content-Type', /json/)
         .expect(200);
 
@@ -84,7 +84,7 @@ describe('Station API', () => {
 
     test('count 파라미터가 없으면 기본값 10을 사용해야 함', async () => {
       const response = await request(app)
-        .get('/api/lines/1호선/random')
+        .get(`/api/lines/${encodeURIComponent('1호선')}/random`)
         .expect(200);
 
       expect(response.body.length).toBe(10);
@@ -92,7 +92,7 @@ describe('Station API', () => {
 
     test('역 개수보다 많은 수를 요청하면 400을 반환해야 함', async () => {
       const response = await request(app)
-        .get('/api/lines/1호선/random?count=1000')
+        .get(`/api/lines/${encodeURIComponent('1호선')}/random?count=1000`)
         .expect(400);
 
       expect(response.body).toHaveProperty('error');

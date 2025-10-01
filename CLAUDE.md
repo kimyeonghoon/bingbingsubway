@@ -79,19 +79,75 @@ bingbing_subway/
 ### Phase 0: DB 설정 ✅
 - schema.sql, seeds.sql 완료
 
-### Phase 1: Backend API
+### Phase 1: Backend API ✅
 - 역 정보 조회
 - 도전 시작/방문 기록
 - GPS 인증
 
-### Phase 2: Frontend
+### Phase 2: Frontend ✅
 - 노선 선택 UI
 - 돌림판 애니메이션
 - 타이머 (3시간)
 - GPS 인증 컴포넌트
 - 방문 기록 목록
 
-### Phase 3: 배포
+### Phase 3: 사용자 기록 시스템 🚧
+#### 데이터베이스 확장
+- **user_stats** 테이블: 사용자별 통계
+  - 총 도전 횟수, 성공/실패 수, 성공률
+  - 총 방문 역 수, 총 플레이 시간
+  - 연속 성공 기록, 현재 스트릭
+  - 첫 도전 날짜, 마지막 플레이 날짜
+
+- **user_visited_stations** 테이블: 고유 역 방문 기록
+  - user_id, station_id, 첫 방문 날짜, 방문 횟수
+
+- **user_achievements** 테이블: 업적 달성 기록
+  - user_id, achievement_id, 달성 날짜
+
+- **achievements** 테이블: 업적 정의
+  - 🚇 첫 발걸음, 🔥 연승왕, 🗺️ 탐험가
+  - ⏱️ 스피드러너, 🌟 노선 마스터, 💯 완벽주의자
+
+#### Backend API
+- **GET /api/users/:userId/stats**: 사용자 통계
+- **GET /api/users/:userId/visited-stations**: 방문 역 목록
+- **GET /api/users/:userId/achievements**: 달성한 업적
+- **GET /api/users/:userId/line-stats**: 노선별 통계
+- **GET /api/leaderboard**: 랭킹 (전체/주간)
+- **POST /api/challenges/:challengeId/complete**: 도전 완료 처리
+- **POST /api/challenges/:challengeId/fail**: 도전 실패 처리
+
+#### Frontend
+- **통계 대시보드**
+  - 기본 통계 카드 (도전 횟수, 성공률)
+  - 역 방문 지도 (노선별 시각화)
+  - 시간 기록 차트
+  - 노선별 통계 그래프
+
+- **업적 페이지**
+  - 달성/미달성 업적 목록
+  - 진행률 표시
+  - 업적 상세 정보
+
+- **랭킹 페이지**
+  - 전체 랭킹 (TOP 100)
+  - 주간 랭킹
+  - 내 순위 표시
+
+- **프로필 페이지**
+  - 기본 정보
+  - 대표 업적 표시
+  - 가장 많이 방문한 역 TOP 5
+  - 완료한 노선 목록
+
+#### 게임 로직 개선
+- 도전 완료/실패 시 통계 자동 업데이트
+- 업적 조건 자동 체크
+- 스트릭 계산 로직
+- 점수 시스템 (성공 +100, 빠른 완료 보너스)
+
+### Phase 4: 배포
 - Backend: Railway
 - Frontend: Vercel
 

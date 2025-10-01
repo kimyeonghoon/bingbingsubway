@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import Timer from '../components/Timer';
 import StationCard from '../components/StationCard';
 import ProgressBar from '../components/ProgressBar';
@@ -9,6 +9,7 @@ import { useGeolocation } from '../hooks/useGeolocation';
 
 function ChallengePage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const challengeId = searchParams.get('id');
   const stationId = searchParams.get('station');
   const userId = searchParams.get('user');
@@ -157,11 +158,11 @@ function ChallengePage() {
             </div>
 
             <button
-              onClick={() => window.close()}
+              onClick={() => navigate('/')}
               className="w-full mt-6 py-3 bg-gray-600 text-white rounded-lg font-bold
                          hover:bg-gray-700 transition-colors"
             >
-              창 닫기
+              메인으로
             </button>
           </div>
 

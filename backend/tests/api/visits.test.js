@@ -3,18 +3,21 @@ const app = require('../../src/server');
 const { pool } = require('../../src/config/database');
 
 describe('Visit API', () => {
-  let testUserId = 'test-user-visit-' + Date.now();
+  let testUserId;
   let challengeId;
   let stationId;
   let stationLat;
   let stationLon;
 
   beforeAll(async () => {
+    // 테스트용 사용자 ID 생성
+    testUserId = Date.now();
+
     // 테스트용 도전 생성
     const response = await request(app)
       .post('/api/challenges')
       .send({
-        userId: Date.now(),  // 숫자 타입으로 변경
+        userId: testUserId,
         lineName: '1호선',
         stationCount: 3
       })
@@ -24,7 +27,6 @@ describe('Visit API', () => {
     stationId = response.body.stations[0].id;
     stationLat = parseFloat(response.body.stations[0].latitude);
     stationLon = parseFloat(response.body.stations[0].longitude);
-    testUserId = response.body.challengeId; // userId를 challengeId로 사용
   }, 10000);
 
   afterAll(async () => {

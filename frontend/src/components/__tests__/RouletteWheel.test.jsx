@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import RouletteWheel from '../RouletteWheel';
 
 describe('RouletteWheel', () => {
@@ -16,6 +16,7 @@ describe('RouletteWheel', () => {
         onStationSelect={() => {}}
         isSpinning={false}
         onSpinComplete={() => {}}
+        selectedStation={null}
       />
     );
 
@@ -24,17 +25,77 @@ describe('RouletteWheel', () => {
     expect(screen.getByText('동대문')).toBeInTheDocument();
   });
 
-  it('renders center circle with "빙빙" text', () => {
+  it('renders center button with "빙빙" text when not spinning', () => {
     render(
       <RouletteWheel
         stations={mockStations}
         onStationSelect={() => {}}
         isSpinning={false}
         onSpinComplete={() => {}}
+        selectedStation={null}
       />
     );
 
     expect(screen.getByText('빙빙')).toBeInTheDocument();
+    expect(screen.getByRole('button')).toBeInTheDocument();
+  });
+
+  it('shows spinning emoji when spinning', () => {
+    render(
+      <RouletteWheel
+        stations={mockStations}
+        onStationSelect={() => {}}
+        isSpinning={true}
+        onSpinComplete={() => {}}
+        selectedStation={null}
+      />
+    );
+
+    expect(screen.getByText('🌀')).toBeInTheDocument();
+  });
+
+  it('shows instruction text when not spinning and no station selected', () => {
+    render(
+      <RouletteWheel
+        stations={mockStations}
+        onStationSelect={() => {}}
+        isSpinning={false}
+        onSpinComplete={() => {}}
+        selectedStation={null}
+      />
+    );
+
+    expect(screen.getByText(/중앙의 "빙빙"을 클릭하세요!/)).toBeInTheDocument();
+  });
+
+  it('center button is disabled when spinning', () => {
+    render(
+      <RouletteWheel
+        stations={mockStations}
+        onStationSelect={() => {}}
+        isSpinning={true}
+        onSpinComplete={() => {}}
+        selectedStation={null}
+      />
+    );
+
+    const button = screen.getByRole('button');
+    expect(button).toBeDisabled();
+  });
+
+  it('center button is disabled when no stations', () => {
+    render(
+      <RouletteWheel
+        stations={[]}
+        onStationSelect={() => {}}
+        isSpinning={false}
+        onSpinComplete={() => {}}
+        selectedStation={null}
+      />
+    );
+
+    const button = screen.getByRole('button');
+    expect(button).toBeDisabled();
   });
 
   it('handles empty stations array', () => {
@@ -44,6 +105,7 @@ describe('RouletteWheel', () => {
         onStationSelect={() => {}}
         isSpinning={false}
         onSpinComplete={() => {}}
+        selectedStation={null}
       />
     );
 
@@ -57,6 +119,7 @@ describe('RouletteWheel', () => {
         onStationSelect={() => {}}
         isSpinning={false}
         onSpinComplete={() => {}}
+        selectedStation={null}
       />
     );
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const RouletteWheel = ({ stations, onStationSelect, isSpinning, onSpinComplete }) => {
+const RouletteWheel = ({ stations, onStationSelect, isSpinning, onSpinComplete, selectedStation, onSpin }) => {
   const [rotation, setRotation] = useState(0);
 
   useEffect(() => {
@@ -28,6 +28,12 @@ const RouletteWheel = ({ stations, onStationSelect, isSpinning, onSpinComplete }
     }, 4000);
   };
 
+  const handleCenterClick = () => {
+    if (!isSpinning && stations && stations.length > 0) {
+      onSpin();
+    }
+  };
+
   const colors = [
     '#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B',
     '#10B981', '#06B6D4', '#6366F1', '#F97316'
@@ -37,7 +43,7 @@ const RouletteWheel = ({ stations, onStationSelect, isSpinning, onSpinComplete }
     <div className="flex flex-col items-center justify-center p-8">
       <div className="relative w-96 h-96 mx-auto">
         {/* 포인터 (빨간 삼각형) */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 z-20">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 z-20 pointer-events-none">
           <div className="w-0 h-0 border-l-[20px] border-r-[20px] border-t-[40px] border-l-transparent border-r-transparent border-t-red-600"></div>
         </div>
 
@@ -72,6 +78,9 @@ const RouletteWheel = ({ stations, onStationSelect, isSpinning, onSpinComplete }
               const textX = textRadius * Math.cos((textAngle - 90) * (Math.PI / 180));
               const textY = textRadius * Math.sin((textAngle - 90) * (Math.PI / 180));
 
+              const stationName = station.station_nm || station.name;
+              const fontSize = stationName.length > 5 ? 11 : 14;
+
               return (
                 <g key={station.id}>
                   <path
@@ -84,33 +93,55 @@ const RouletteWheel = ({ stations, onStationSelect, isSpinning, onSpinComplete }
                     x={textX}
                     y={textY}
                     fill="white"
-                    fontSize="14"
+                    fontSize={fontSize}
                     fontWeight="bold"
                     textAnchor="middle"
                     dominantBaseline="middle"
                     transform={`rotate(${textAngle}, ${textX}, ${textY})`}
                   >
-                    {station.station_nm || station.name}
+                    {stationName}
                   </text>
                 </g>
               );
             })}
-            {/* 중앙 원 */}
-            <circle cx="0" cy="0" r="30" fill="white" stroke="#333" strokeWidth="3" />
-            <text
-              x="0"
-              y="0"
-              fill="#1e40af"
-              fontSize="16"
-              fontWeight="bold"
-              textAnchor="middle"
-              dominantBaseline="middle"
-            >
-              빙빙
-            </text>
           </g>
         </svg>
+
+        {/* 중앙 클릭 가능한 버튼 */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <button
+            onClick={handleCenterClick}
+            disabled={isSpinning || !stations || stations.length === 0}
+            className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-600 to-blue-800
+                       border-4 border-white shadow-xl flex items-center justify-center
+                       transition-all duration-200 transform
+                       hover:scale-110 hover:shadow-2xl active:scale-95
+                       disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
+                       cursor-pointer group relative overflow-hidden"
+            style={{ zIndex: 30 }}
+          >
+            {/* 반짝이는 효과 */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-full"></div>
+
+            {/* 중앙 텍스트 */}
+            <span className="relative z-10 text-white font-bold text-2xl group-hover:animate-pulse">
+              {isSpinning ? '🌀' : '빙빙'}
+            </span>
+
+            {/* 테두리 효과 */}
+            {!isSpinning && (
+              <div className="absolute inset-0 rounded-full border-2 border-yellow-400 animate-ping opacity-75"></div>
+            )}
+          </button>
+        </div>
       </div>
+
+      {/* 안내 텍스트 */}
+      {!selectedStation && !isSpinning && (
+        <p className="mt-4 text-sm text-gray-600 animate-bounce">
+          👆 중앙의 "빙빙"을 클릭하세요!
+        </p>
+      )}
     </div>
   );
 };
