@@ -106,62 +106,69 @@ export default function HomePage({ userId }) {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <header className="text-center mb-8">
-        <h1 className="text-5xl font-bold text-blue-900 mb-2">🎡 룰렛 게임</h1>
-        <p className="text-gray-600">랜덤으로 선택된 역을 방문하는 지하철 룰렛 게임</p>
+      <header className="text-center mb-12">
+        <h1 className="text-6xl font-bold text-white mb-4 drop-shadow-lg">🎡 룰렛 게임</h1>
+        <p className="text-white/80 text-lg">랜덤으로 선택된 역을 방문하는 지하철 룰렛 게임</p>
       </header>
 
       {step === 'setup' && (
-        <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">빙빙 지하철 룰렛</h2>
+        <div className="max-w-md mx-auto backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-8">
+          <h2 className="text-3xl font-bold text-white mb-8 text-center">빙빙 지하철 룰렛</h2>
 
           {/* 진행 중인 도전이 있으면 표시 */}
           {challengeId && selectedStation && (
-            <div className="mb-6 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
-              <h3 className="text-sm font-bold text-yellow-900 mb-2">🎯 진행 중인 도전</h3>
-              <p className="text-sm text-gray-700 mb-1">
-                노선: <span className="font-bold">{selectedLine}</span>
+            <div className="mb-6 p-5 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 backdrop-blur-sm border border-yellow-400/30 rounded-xl shadow-lg">
+              <h3 className="text-sm font-bold text-yellow-300 mb-3 flex items-center gap-2">
+                <span className="text-xl">🎯</span>
+                진행 중인 도전
+              </h3>
+              <p className="text-white/90 mb-2">
+                노선: <span className="font-bold text-yellow-300">{selectedLine}</span>
               </p>
-              <p className="text-sm text-gray-700 mb-3">
-                역: <span className="font-bold">{selectedStation.station_nm || selectedStation.name}</span>
+              <p className="text-white/90 mb-4">
+                역: <span className="font-bold text-yellow-300">{selectedStation.station_nm || selectedStation.name}</span>
               </p>
               <button
                 onClick={handleGoToChallenge}
-                className="w-full py-2 bg-yellow-600 text-white rounded-lg font-semibold
-                           hover:bg-yellow-700 transition-colors"
+                className="w-full py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-xl font-bold
+                           hover:from-yellow-600 hover:to-orange-600 transition-all duration-300
+                           shadow-lg hover:shadow-xl hover:scale-105"
               >
                 도전 이어하기
               </button>
             </div>
           )}
 
-          <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-            <p className="text-sm text-gray-700 mb-2">
-              🎲 <span className="font-bold">랜덤 노선</span>이 선택됩니다!
+          <div className="mb-6 p-5 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 backdrop-blur-sm border border-blue-400/30 rounded-xl">
+            <p className="text-white/90 mb-3 flex items-center gap-2">
+              <span className="text-xl">🎲</span>
+              <span className="font-bold">랜덤 노선</span>이 선택됩니다!
             </p>
-            <p className="text-sm text-gray-700">
-              🎡 룰렛을 돌려 <span className="font-bold text-blue-600">랜덤 1개 역</span>을 선택하고 방문하세요!
+            <p className="text-white/80 flex items-center gap-2">
+              <span className="text-xl">🎡</span>
+              룰렛을 돌려 <span className="font-bold text-blue-300">랜덤 1개 역</span>을 선택하고 방문하세요!
             </p>
           </div>
 
           <button
             onClick={handleStartChallenge}
             disabled={lines.length === 0}
-            className="w-full py-3 bg-blue-600 text-white rounded-lg font-bold text-lg
-                       hover:bg-blue-700 transition-colors shadow-lg
-                       disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold text-lg
+                       hover:from-blue-700 hover:to-indigo-700 transition-all duration-300
+                       shadow-xl hover:shadow-2xl hover:scale-105
+                       disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
-            {challengeId ? '새로운 도전 시작' : '도전 시작'}
+            {challengeId ? '🎯 새로운 도전 시작' : '🚀 도전 시작'}
           </button>
         </div>
       )}
 
       {step === 'roulette' && (
-        <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2 text-center">
+        <div className="max-w-2xl mx-auto backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-8">
+          <h2 className="text-3xl font-bold text-white mb-2 text-center">
             룰렛을 돌려 역을 확인하세요!
           </h2>
-          <p className="text-center text-gray-600 mb-6">
+          <p className="text-center text-white/80 mb-6 text-lg">
             {selectedLine} • 1개 역 선택
           </p>
 
@@ -175,26 +182,28 @@ export default function HomePage({ userId }) {
           />
 
           {selectedStation && !isSpinning && (
-            <div className="mt-8 p-6 bg-gradient-to-br from-green-50 to-blue-50 rounded-lg border-2 border-green-400 shadow-lg">
-              <h3 className="text-xl font-bold text-green-900 mb-2 text-center">
-                🎉 뽑힌 역
+            <div className="mt-8 p-6 bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-sm border border-green-400/30 rounded-2xl shadow-2xl">
+              <h3 className="text-2xl font-bold text-green-300 mb-3 text-center flex items-center justify-center gap-2">
+                <span className="text-3xl">🎉</span>
+                뽑힌 역
               </h3>
-              <p className="text-4xl font-bold text-center text-green-700 my-4">
+              <p className="text-5xl font-bold text-center text-white my-6 drop-shadow-lg">
                 {selectedStation.station_nm || selectedStation.name}
               </p>
-              <p className="text-center text-gray-600 mt-2 font-semibold">
+              <p className="text-center text-green-300 mt-2 font-bold text-xl">
                 {selectedStation.line_num || selectedStation.line}
               </p>
 
               <button
                 onClick={handleGoToChallenge}
-                className="w-full mt-6 py-3 bg-green-600 text-white rounded-lg font-bold text-lg
-                           hover:bg-green-700 transition-colors shadow-lg"
+                className="w-full mt-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-lg
+                           hover:from-green-700 hover:to-emerald-700 transition-all duration-300
+                           shadow-xl hover:shadow-2xl hover:scale-105"
               >
                 🚇 도전 시작하기
               </button>
 
-              <p className="text-center text-sm text-gray-600 mt-4">
+              <p className="text-center text-sm text-white/60 mt-4">
                 💡 중앙 버튼을 다시 클릭하면 다른 역을 뽑을 수 있습니다
               </p>
             </div>
