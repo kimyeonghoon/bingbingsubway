@@ -14,16 +14,18 @@ describe('Visit API', () => {
     const response = await request(app)
       .post('/api/challenges')
       .send({
-        userId: testUserId,
+        userId: Date.now(),  // 숫자 타입으로 변경
         lineName: '1호선',
         stationCount: 3
-      });
+      })
+      .expect(201);
 
     challengeId = response.body.challengeId;
     stationId = response.body.stations[0].id;
-    stationLat = response.body.stations[0].latitude;
-    stationLon = response.body.stations[0].longitude;
-  });
+    stationLat = parseFloat(response.body.stations[0].latitude);
+    stationLon = parseFloat(response.body.stations[0].longitude);
+    testUserId = response.body.challengeId; // userId를 challengeId로 사용
+  }, 10000);
 
   afterAll(async () => {
     // 테스트 데이터 정리

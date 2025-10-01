@@ -3,7 +3,7 @@ const app = require('../../src/server');
 const { pool } = require('../../src/config/database');
 
 describe('Challenge API', () => {
-  let testUserId = 'test-user-' + Date.now();
+  let testUserId = Date.now(); // 숫자 타입으로 변경
   let challengeId;
 
   afterAll(async () => {
