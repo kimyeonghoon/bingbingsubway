@@ -51,6 +51,9 @@ async function getVisitedStations(req, res, next) {
     const { userId } = req.params;
     const { limit = 100, offset = 0 } = req.query;
 
+    const parsedLimit = parseInt(limit);
+    const parsedOffset = parseInt(offset);
+
     const [stations] = await pool.execute(
       `SELECT
         uvs.station_id,
@@ -63,8 +66,8 @@ async function getVisitedStations(req, res, next) {
       JOIN stations s ON uvs.station_id = s.id
       WHERE uvs.user_id = ?
       ORDER BY uvs.last_visit_at DESC
-      LIMIT ? OFFSET ?`,
-      [userId, parseInt(limit), parseInt(offset)]
+      LIMIT ${parsedLimit} OFFSET ${parsedOffset}`,
+      [userId]
     );
 
     // 총 방문 역 수
