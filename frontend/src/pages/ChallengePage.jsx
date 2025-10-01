@@ -3,8 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import Timer from '../components/Timer';
 import StationCard from '../components/StationCard';
 import ProgressBar from '../components/ProgressBar';
-import { challengeApi } from '../api/challengeApi';
-import { visitApi } from '../api/visitApi';
+import { challengeApi, visitApi } from '../services/api';
 import { useGeolocation } from '../hooks/useGeolocation';
 
 function ChallengePage() {
