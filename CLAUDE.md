@@ -147,7 +147,114 @@ bingbing_subway/
 - 스트릭 계산 로직
 - 점수 시스템 (성공 +100, 빠른 완료 보너스)
 
-### Phase 4: Docker 배포 🚧
+### Phase 4: 사용자 인증 시스템 🚧
+#### 데이터베이스 확장
+- **users 테이블 수정**
+  - email (unique, nullable - 소셜 로그인용)
+  - password_hash (nullable - 소셜 로그인용)
+  - username (unique, not null)
+  - provider (local/google/kakao/naver)
+  - provider_id (소셜 로그인 ID)
+  - email_verified (boolean)
+  - created_at, updated_at
+
+- **refresh_tokens 테이블** (JWT 리프레시 토큰)
+  - id, user_id, token, expires_at, created_at
+
+- **password_resets 테이블** (비밀번호 재설정)
+  - id, user_id, token, expires_at, created_at
+
+#### Backend API
+- **인증 API**
+  - POST /api/auth/register (이메일 회원가입)
+  - POST /api/auth/login (로그인)
+  - POST /api/auth/logout (로그아웃)
+  - POST /api/auth/refresh (토큰 갱신)
+  - POST /api/auth/forgot-password (비밀번호 재설정 요청)
+  - POST /api/auth/reset-password (비밀번호 재설정)
+  - GET /api/auth/me (현재 사용자 정보)
+
+- **소셜 로그인 API**
+  - GET /api/auth/google (Google OAuth)
+  - GET /api/auth/google/callback
+  - GET /api/auth/kakao (Kakao OAuth)
+  - GET /api/auth/kakao/callback
+  - GET /api/auth/naver (Naver OAuth)
+  - GET /api/auth/naver/callback
+
+- **사용자 관리 API**
+  - GET /api/users/:userId (프로필 조회)
+  - PUT /api/users/:userId (프로필 수정)
+  - DELETE /api/users/:userId (회원탈퇴)
+  - PUT /api/users/:userId/password (비밀번호 변경)
+
+#### 인증 구현
+- **JWT 토큰 기반 인증**
+  - Access Token (15분 유효)
+  - Refresh Token (7일 유효)
+  - HTTP-only 쿠키로 저장
+
+- **비밀번호 암호화**
+  - bcrypt 해싱 (salt rounds: 10)
+
+- **OAuth 2.0 소셜 로그인**
+  - Passport.js 사용
+  - Google, Kakao, Naver 지원
+
+- **인증 미들웨어**
+  - JWT 검증 미들웨어
+  - 권한 확인 미들웨어
+  - Rate limiting (로그인 시도 제한)
+
+#### Frontend
+- **로그인/회원가입 페이지**
+  - 이메일/비밀번호 입력
+  - 소셜 로그인 버튼 (Google, Kakao, Naver)
+  - 비밀번호 찾기 링크
+  - 회원가입 링크
+
+- **회원가입 페이지**
+  - 이메일, 비밀번호, 닉네임 입력
+  - 비밀번호 강도 체크
+  - 이메일 중복 확인
+  - 약관 동의
+
+- **프로필 설정 페이지**
+  - 닉네임 변경
+  - 비밀번호 변경
+  - 이메일 변경
+  - 회원탈퇴
+
+- **인증 상태 관리**
+  - React Context / Zustand
+  - localStorage에서 JWT 관리로 변경
+  - 자동 토큰 갱신
+  - 로그아웃 시 토큰 삭제
+
+#### 보안
+- **CSRF 방지**
+  - CSRF 토큰
+  - SameSite 쿠키 설정
+
+- **XSS 방지**
+  - 입력 데이터 sanitize
+  - Content Security Policy
+
+- **Rate Limiting**
+  - 로그인 시도 제한 (5회/10분)
+  - API 호출 제한
+
+- **이메일 인증** (선택사항)
+  - 회원가입 시 이메일 발송
+  - 인증 링크 클릭
+
+#### 마이그레이션
+- **기존 사용자 데이터 처리**
+  - localStorage userId를 실제 계정으로 마이그레이션
+  - 임시 계정 생성 후 연동 안내
+  - 데이터 병합 기능
+
+### Phase 5: Docker 배포 (예정)
 #### 배포 환경 구성
 - **Docker Compose 프로덕션 설정**
   - 멀티 스테이지 빌드 (Frontend)
@@ -376,6 +483,7 @@ describe('RouletteWheel', () => {
 ---
 
 **데이터베이스**: MySQL 8.0 (Docker)
-**상태**: Phase 3 완료, Docker 배포 준비 중
+**상태**: Phase 3 완료, Phase 4 사용자 인증 시스템 진행 예정
+**다음 작업**: JWT 기반 로그인/회원가입 및 소셜 로그인 구현
 **배포 방식**: Docker Compose (Nginx + Backend + MySQL)
 **개발 환경**: 원격 서버 (SSH)
