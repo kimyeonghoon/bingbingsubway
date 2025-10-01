@@ -38,7 +38,7 @@ export default function StatsDashboard({ userId }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">통계 불러오는 중...</div>
+        <div className="text-white text-lg">통계 불러오는 중...</div>
       </div>
     );
   }
@@ -46,13 +46,13 @@ export default function StatsDashboard({ userId }) {
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-red-500">{error}</div>
+        <div className="text-red-300 text-lg">{error}</div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-6">
+    <div className="max-w-4xl mx-auto p-4 space-y-6 relative z-10">
       {/* 기본 통계 카드 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
@@ -78,17 +78,17 @@ export default function StatsDashboard({ userId }) {
       </div>
 
       {/* 점수 및 시간 */}
-      <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-6 shadow-sm">
+      <div className="backdrop-blur-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/20 rounded-2xl p-6 shadow-2xl">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-sm text-gray-600 mb-1">총 점수</div>
-            <div className="text-3xl font-bold text-blue-600">
+            <div className="text-sm text-white/70 mb-2 font-semibold">총 점수</div>
+            <div className="text-4xl font-bold text-white">
               {stats?.total_score?.toLocaleString() || 0}
             </div>
           </div>
           <div className="text-right">
-            <div className="text-sm text-gray-600 mb-1">평균 시간</div>
-            <div className="text-2xl font-semibold text-purple-600">
+            <div className="text-sm text-white/70 mb-2 font-semibold">평균 시간</div>
+            <div className="text-3xl font-bold text-white">
               {stats?.average_time ? `${Math.floor(stats.average_time / 60)}분` : '-'}
             </div>
           </div>
@@ -97,12 +97,12 @@ export default function StatsDashboard({ userId }) {
 
       {/* 노선별 통계 */}
       {lineStats.length > 0 && (
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <h2 className="text-xl font-bold mb-4 flex items-center">
-            <TrendingUp className="w-5 h-5 mr-2 text-blue-500" />
+        <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl">
+          <h2 className="text-2xl font-bold mb-6 flex items-center text-white">
+            <TrendingUp className="w-6 h-6 mr-2 text-blue-400" />
             노선별 통계
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {lineStats.map((line) => (
               <LineStatBar key={line.line_num} line={line} />
             ))}
@@ -112,9 +112,9 @@ export default function StatsDashboard({ userId }) {
 
       {/* 최근 활동 */}
       {recentActivities.length > 0 && (
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <h2 className="text-xl font-bold mb-4 flex items-center">
-            <Clock className="w-5 h-5 mr-2 text-blue-500" />
+        <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl">
+          <h2 className="text-2xl font-bold mb-6 flex items-center text-white">
+            <Clock className="w-6 h-6 mr-2 text-blue-400" />
             최근 활동
           </h2>
           <div className="space-y-3">
@@ -130,12 +130,12 @@ export default function StatsDashboard({ userId }) {
 
 function StatCard({ icon, label, value }) {
   return (
-    <div className="bg-white rounded-lg p-4 shadow-sm">
-      <div className="flex items-center justify-between mb-2">
+    <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-xl p-5 shadow-xl hover:scale-105 transition-all duration-300">
+      <div className="flex items-center justify-between mb-3">
         {icon}
       </div>
-      <div className="text-2xl font-bold">{value}</div>
-      <div className="text-sm text-gray-600">{label}</div>
+      <div className="text-3xl font-bold text-white">{value}</div>
+      <div className="text-sm text-white/70 font-semibold">{label}</div>
     </div>
   );
 }
@@ -145,19 +145,19 @@ function LineStatBar({ line }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-1 text-sm">
-        <span className="font-medium">{line.line_num}</span>
-        <span className="text-gray-600">
+      <div className="flex items-center justify-between mb-2 text-sm">
+        <span className="font-bold text-white">{line.line_num}</span>
+        <span className="text-white/70 font-semibold">
           {line.visited_count} / {line.total_count}
         </span>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-2">
+      <div className="w-full bg-white/10 rounded-full h-3">
         <div
-          className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+          className="bg-gradient-to-r from-blue-500 to-indigo-500 h-3 rounded-full transition-all duration-500 shadow-lg"
           style={{ width: `${percentage}%` }}
         />
       </div>
-      <div className="text-xs text-gray-500 mt-1">
+      <div className="text-xs text-white/60 mt-1 font-semibold">
         {percentage.toFixed(1)}% 완료
       </div>
     </div>
@@ -166,25 +166,25 @@ function LineStatBar({ line }) {
 
 function ActivityItem({ activity }) {
   const isSuccess = activity.status === 'completed';
-  const date = new Date(activity.created_at);
-  const timeAgo = getTimeAgo(date);
+  const date = activity.started_at ? new Date(activity.started_at) : null;
+  const timeAgo = date && !isNaN(date) ? getTimeAgo(date) : '-';
 
   return (
-    <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+    <div className="flex items-center justify-between py-3 border-b border-white/10 last:border-0">
       <div className="flex items-center space-x-3">
-        <div className={`w-2 h-2 rounded-full ${isSuccess ? 'bg-green-500' : 'bg-red-500'}`} />
+        <div className={`w-3 h-3 rounded-full ${isSuccess ? 'bg-green-400 shadow-lg shadow-green-500/50' : 'bg-red-400 shadow-lg shadow-red-500/50'}`} />
         <div>
-          <div className="font-medium">{activity.line_num}</div>
-          <div className="text-sm text-gray-600">
-            {activity.visited_count} / {activity.total_count} 역 방문
+          <div className="font-bold text-white">{activity.line_num}</div>
+          <div className="text-sm text-white/70">
+            {activity.final_station_name || '역 선택'} 방문
           </div>
         </div>
       </div>
       <div className="text-right">
-        <div className={`text-sm font-medium ${isSuccess ? 'text-green-600' : 'text-red-600'}`}>
+        <div className={`text-sm font-bold ${isSuccess ? 'text-green-300' : 'text-red-300'}`}>
           {isSuccess ? '성공' : '실패'}
         </div>
-        <div className="text-xs text-gray-500">{timeAgo}</div>
+        <div className="text-xs text-white/60">{timeAgo}</div>
       </div>
     </div>
   );
