@@ -1,5 +1,23 @@
 @import "tailwindcss";
 
+/* Tailwind v4 CSS-based configuration */
+@theme {
+  /* Safelist colors that are used dynamically */
+  --color-yellow-600: #ca8a04;
+  --color-blue-600: #2563eb;
+  --color-green-600: #16a34a;
+  --color-purple-600: #9333ea;
+  --color-orange-600: #ea580c;
+  --color-yellow-500: #eab308;
+  --color-blue-100: #dbeafe;
+  --color-yellow-50: #fefce8;
+  --color-green-50: #f0fdf4;
+  --color-blue-50: #eff6ff;
+  --color-yellow-400: #facc15;
+  --color-blue-300: #93c5fd;
+  --color-green-400: #4ade80;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -34,5 +52,75 @@ body {
   }
   50% {
     box-shadow: 0 0 40px rgba(59, 130, 246, 0.8);
+  }
+}
+
+/* Responsive Design Utilities */
+@media (max-width: 640px) {
+  body {
+    font-size: 14px;
+  }
+}
+
+/* Focus State Visualization */
+*:focus-visible {
+  outline: 2px solid #3B82F6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Skip to main content for accessibility */
+.skip-to-main {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #3B82F6;
+  color: white;
+  padding: 8px;
+  text-decoration: none;
+  z-index: 100;
+}
+
+.skip-to-main:focus {
+  top: 0;
+}
+
+/* Skeleton Loading Animation */
+@keyframes skeleton-loading {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.skeleton {
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 0px,
+    #e0e0e0 40px,
+    #f0f0f0 80px
+  );
+  background-size: 200px 100%;
+  border-radius: 4px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  * {
+    border-width: 2px !important;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
