@@ -83,7 +83,7 @@ async function getWeeklyLeaderboard(req, res, next) {
         c.user_id,
         COUNT(*) as weekly_challenges,
         SUM(CASE WHEN c.status = 'completed' THEN 1 ELSE 0 END) as weekly_completed,
-        SUM(c.score) as weekly_score,
+        COALESCE(SUM(c.score), 0) as weekly_score,
         ROUND(SUM(CASE WHEN c.status = 'completed' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) as weekly_success_rate
       FROM challenges c
       WHERE c.started_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
