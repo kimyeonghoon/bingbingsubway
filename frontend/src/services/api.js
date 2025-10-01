@@ -10,28 +10,107 @@ const api = axios.create({
   }
 });
 
+// Error handler with retry logic
+const handleApiError = (error, retryFn = null) => {
+  const errorResponse = {
+    message: '알 수 없는 오류가 발생했습니다.',
+    status: error.response?.status,
+    retry: retryFn
+  };
+
+  if (error.code === 'ECONNABORTED') {
+    errorResponse.message = '요청 시간이 초과되었습니다.';
+  } else if (error.code === 'ERR_NETWORK') {
+    errorResponse.message = '네트워크 연결을 확인해주세요.';
+  } else if (error.response) {
+    switch (error.response.status) {
+      case 400:
+        errorResponse.message = error.response.data?.message || '잘못된 요청입니다.';
+        break;
+      case 401:
+        errorResponse.message = '인증이 필요합니다.';
+        break;
+      case 403:
+        errorResponse.message = '접근 권한이 없습니다.';
+        break;
+      case 404:
+        errorResponse.message = '요청한 정보를 찾을 수 없습니다.';
+        break;
+      case 500:
+        errorResponse.message = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+        break;
+      default:
+        errorResponse.message = error.response.data?.message || '오류가 발생했습니다.';
+    }
+  }
+
+  return errorResponse;
+};
+
+// Retry helper
+const retryRequest = async (fn, maxRetries = 3, delay = 1000) => {
+  let lastError;
+
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      if (i < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, delay * (i + 1)));
+      }
+    }
+  }
+
+  throw lastError;
+};
+
 // 역 정보 API
 export const stationApi = {
   getLines: async () => {
-    const response = await api.get('/lines');
-    return response.data;
+    try {
+      return await retryRequest(async () => {
+        const response = await api.get('/lines');
+        return response.data;
+      });
+    } catch (error) {
+      throw handleApiError(error, () => stationApi.getLines());
+    }
   },
 
   getStationsByLine: async (lineName) => {
-    const response = await api.get(`/lines/${encodeURIComponent(lineName)}/stations`);
-    return response.data;
+    try {
+      return await retryRequest(async () => {
+        const response = await api.get(`/lines/${encodeURIComponent(lineName)}/stations`);
+        return response.data;
+      });
+    } catch (error) {
+      throw handleApiError(error, () => stationApi.getStationsByLine(lineName));
+    }
   },
 
   getRandomStations: async (lineName, count = 10) => {
-    const response = await api.get(`/lines/${encodeURIComponent(lineName)}/random`, {
-      params: { count }
-    });
-    return response.data;
+    try {
+      return await retryRequest(async () => {
+        const response = await api.get(`/lines/${encodeURIComponent(lineName)}/random`, {
+          params: { count }
+        });
+        return response.data;
+      });
+    } catch (error) {
+      throw handleApiError(error, () => stationApi.getRandomStations(lineName, count));
+    }
   },
 
   getStationById: async (stationId) => {
-    const response = await api.get(`/stations/${stationId}`);
-    return response.data;
+    try {
+      return await retryRequest(async () => {
+        const response = await api.get(`/stations/${stationId}`);
+        return response.data;
+      });
+    } catch (error) {
+      throw handleApiError(error, () => stationApi.getStationById(stationId));
+    }
   }
 };
 
@@ -74,13 +153,14 @@ export const challengeApi = {
 
 // 방문 인증 API
 export const visitApi = {
-  createVisit: async (challengeId, userId, stationId, latitude, longitude) => {
+  createVisit: async (challengeId, userId, stationId, latitude, longitude, accuracy) => {
     const response = await api.post('/visits', {
       challengeId,
       userId,
       stationId,
       latitude,
-      longitude
+      longitude,
+      accuracy
     });
     return response.data;
   },

@@ -90,7 +90,8 @@ function ChallengePage() {
         userId,
         verifyingStationId,
         location.latitude,
-        location.longitude
+        location.longitude,
+        location.accuracy
       );
 
       alert(`${result.stationName} 인증 완료! (거리: ${result.distance}m)`);
@@ -167,8 +168,35 @@ function ChallengePage() {
           </div>
 
           {geoError && (
-            <div className="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-              GPS 오류: {geoError}
+            <div className="mt-4 p-6 bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-300 rounded-2xl shadow-lg">
+              <div className="flex items-start gap-4">
+                <div className="text-red-500 text-2xl">⚠️</div>
+                <div className="flex-1">
+                  <h4 className="text-lg font-bold text-red-700 mb-2">
+                    {typeof geoError === 'object' ? geoError.message : 'GPS 오류'}
+                  </h4>
+                  <p className="text-red-600 mb-3">
+                    {typeof geoError === 'object' ? geoError.detail : geoError}
+                  </p>
+                  {typeof geoError === 'object' && geoError.action === 'retry' && (
+                    <button
+                      onClick={() => verifyingStationId && getCurrentPosition()}
+                      className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                    >
+                      다시 시도
+                    </button>
+                  )}
+                  {typeof geoError === 'object' && geoError.action === 'settings' && (
+                    <div className="text-sm text-red-700 mt-2">
+                      <p className="font-semibold mb-1">설정 방법:</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        <li>Chrome: 설정 → 개인정보 및 보안 → 사이트 설정 → 위치</li>
+                        <li>Safari: 설정 → Safari → 위치</li>
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </div>
