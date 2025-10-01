@@ -67,9 +67,10 @@ async function getRandomStations(req, res, next) {
     const { lineName } = req.params;
     const count = parseInt(req.query.count) || 10;
 
+    // LIMIT는 prepared statement에서 바인딩할 수 없으므로 정수로 변환 후 직접 삽입
     const [rows] = await pool.execute(
-      'SELECT * FROM stations WHERE line_num = ? ORDER BY RAND() LIMIT ?',
-      [lineName, count]
+      `SELECT * FROM stations WHERE line_num = ? ORDER BY RAND() LIMIT ${count}`,
+      [lineName]
     );
 
     if (rows.length < count) {

@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS stations (
   id INT AUTO_INCREMENT PRIMARY KEY,
   station_cd VARCHAR(10) UNIQUE NOT NULL COMMENT '역 코드',
   station_nm VARCHAR(50) NOT NULL COMMENT '역 이름',
-  line_num VARCHAR(20) NOT NULL COMMENT '노선명',
+  line_num VARCHAR(50) NOT NULL COMMENT '노선명',
   fr_code VARCHAR(20) COMMENT '외부코드',
   latitude DECIMAL(10, 8) COMMENT '위도',
   longitude DECIMAL(11, 8) COMMENT '경도',
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS visits (
 CREATE TABLE IF NOT EXISTS challenges (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
-  line_num VARCHAR(20) NOT NULL COMMENT '도전 노선',
+  line_num VARCHAR(50) NOT NULL COMMENT '도전 노선',
   selected_stations JSON COMMENT '선택된 10개 역 ID 배열',
   final_station_id INT COMMENT '최종 선택된 역 ID',
   status ENUM('in_progress', 'completed', 'failed', 'cancelled') DEFAULT 'in_progress',

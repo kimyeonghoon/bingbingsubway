@@ -17,10 +17,10 @@ async function createChallenge(req, res, next) {
 
     await connection.beginTransaction();
 
-    // 1. 랜덤 역 선택
+    // 1. 랜덤 역 선택 (stationCount는 정수로 변환하여 SQL injection 방지)
     const [stations] = await connection.execute(
-      'SELECT * FROM stations WHERE line_num = ? ORDER BY RAND() LIMIT ?',
-      [lineName, stationCount]
+      `SELECT * FROM stations WHERE line_num = ? ORDER BY RAND() LIMIT ${stationCount}`,
+      [lineName]
     );
 
     if (stations.length < stationCount) {
@@ -32,7 +32,7 @@ async function createChallenge(req, res, next) {
 
     // 2. 도전 레코드 생성
     const [result] = await connection.execute(
-      'INSERT INTO challenges (user_id, line_num, total_stations, completed_stations, created_at) VALUES (?, ?, ?, 0, NOW())',
+      'INSERT INTO challenges (user_id, line_num, total_stations, completed_stations) VALUES (?, ?, ?, 0)',
       [userId, lineName, stationCount]
     );
 
@@ -86,7 +86,7 @@ async function getChallengesByUser(req, res, next) {
         c.line_num,
         c.total_stations,
         c.completed_stations,
-        c.created_at,
+        c.started_at as created_at,
         c.completed_at,
         CASE
           WHEN c.completed_stations = c.total_stations THEN 'completed'
@@ -94,7 +94,7 @@ async function getChallengesByUser(req, res, next) {
         END as status
       FROM challenges c
       WHERE c.user_id = ?
-      ORDER BY c.created_at DESC`,
+      ORDER BY c.started_at DESC`,
       [userId]
     );
 
