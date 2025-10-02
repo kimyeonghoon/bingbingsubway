@@ -35,18 +35,22 @@ CREATE TABLE IF NOT EXISTS stations (
 -- 3. visits (방문 기록 테이블)
 CREATE TABLE IF NOT EXISTS visits (
   id INT AUTO_INCREMENT PRIMARY KEY,
+  challenge_id INT COMMENT '도전 ID',
   user_id INT NOT NULL,
   station_id INT NOT NULL,
   start_time TIMESTAMP NOT NULL COMMENT '출발 시간',
   arrival_time TIMESTAMP COMMENT '도착 시간',
-  verified BOOLEAN DEFAULT FALSE COMMENT '인증 여부',
+  verified BOOLEAN DEFAULT FALSE COMMENT '인증 여부 (legacy)',
+  is_verified BOOLEAN DEFAULT FALSE COMMENT '인증 여부',
   time_taken INT COMMENT '소요 시간(초)',
   visit_latitude DECIMAL(10, 8) COMMENT '방문 시 위도',
   visit_longitude DECIMAL(11, 8) COMMENT '방문 시 경도',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (station_id) REFERENCES stations(id) ON DELETE CASCADE,
+  FOREIGN KEY (challenge_id) REFERENCES challenges(id) ON DELETE CASCADE,
   INDEX idx_user_verified (user_id, verified),
+  INDEX idx_challenge (challenge_id),
   INDEX idx_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
