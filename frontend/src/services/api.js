@@ -149,6 +149,13 @@ export const challengeApi = {
     return response.data;
   },
 
+  selectStation: async (challengeId, stationId) => {
+    const response = await api.put(`/challenges/${challengeId}/select-station`, {
+      stationId
+    });
+    return response.data;
+  },
+
   completeChallenge: async (challengeId, userId) => {
     const response = await api.post(`/challenges/${challengeId}/complete`, {
       userId
