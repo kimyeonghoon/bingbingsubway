@@ -181,4 +181,91 @@ describe('Auth API', () => {
       expect(res.body).toHaveProperty('error');
     });
   });
+
+  describe('POST /api/auth/refresh', () => {
+    let refreshToken;
+
+    beforeEach(async () => {
+      // 사용자 등록 및 토큰 획득
+      const res = await request(app)
+        .post('/api/auth/register')
+        .send({
+          email: 'refresh@example.com',
+          password: 'Password123!',
+          username: 'refreshuser',
+        });
+
+      refreshToken = res.body.refreshToken;
+    });
+
+    it('유효한 리프레시 토큰으로 새 액세스 토큰을 발급해야 함', async () => {
+      const res = await request(app)
+        .post('/api/auth/refresh')
+        .send({ refreshToken });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('accessToken');
+      expect(res.body).toHaveProperty('refreshToken');
+    });
+
+    it('잘못된 리프레시 토큰은 에러를 반환해야 함', async () => {
+      const res = await request(app)
+        .post('/api/auth/refresh')
+        .send({ refreshToken: 'invalid.token.here' });
+
+      expect(res.status).toBe(401);
+      expect(res.body).toHaveProperty('error');
+    });
+
+    it('리프레시 토큰 누락 시 에러를 반환해야 함', async () => {
+      const res = await request(app)
+        .post('/api/auth/refresh')
+        .send({});
+
+      expect(res.status).toBe(400);
+      expect(res.body).toHaveProperty('error');
+    });
+  });
+
+  describe('POST /api/auth/logout', () => {
+    let refreshToken;
+
+    beforeEach(async () => {
+      // 사용자 등록 및 토큰 획득
+      const res = await request(app)
+        .post('/api/auth/register')
+        .send({
+          email: 'logout@example.com',
+          password: 'Password123!',
+          username: 'logoutuser',
+        });
+
+      refreshToken = res.body.refreshToken;
+    });
+
+    it('로그아웃 시 리프레시 토큰을 삭제해야 함', async () => {
+      const res = await request(app)
+        .post('/api/auth/logout')
+        .send({ refreshToken });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('message');
+
+      // 같은 토큰으로 다시 리프레시 시도하면 실패해야 함
+      const refreshRes = await request(app)
+        .post('/api/auth/refresh')
+        .send({ refreshToken });
+
+      expect(refreshRes.status).toBe(401);
+    });
+
+    it('리프레시 토큰 누락 시 에러를 반환해야 함', async () => {
+      const res = await request(app)
+        .post('/api/auth/logout')
+        .send({});
+
+      expect(res.status).toBe(400);
+      expect(res.body).toHaveProperty('error');
+    });
+  });
 });

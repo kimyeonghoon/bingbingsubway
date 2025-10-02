@@ -11,6 +11,8 @@ const authController = require('../controllers/authController');
 // 인증 관련 라우트
 router.post('/auth/register', authController.register);
 router.post('/auth/login', authController.login);
+router.post('/auth/refresh', authController.refresh);
+router.post('/auth/logout', authController.logout);
 
 // 역 정보 관련 라우트
 router.get('/lines', stationController.getLines);
