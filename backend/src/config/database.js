@@ -11,11 +11,15 @@ const pool = mysql.createPool({
   connectAttributes: {
     program_name: 'bingbing_subway_backend'
   },
-  // UTF-8 연결 강제
-  initSql: ["SET NAMES 'utf8mb4'", "SET CHARACTER SET utf8mb4"],
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
+});
+
+// 풀에서 연결을 가져올 때 UTF-8 설정 적용
+pool.on('connection', (connection) => {
+  connection.query("SET NAMES 'utf8mb4'");
+  connection.query("SET CHARACTER SET utf8mb4");
 });
 
 // 연결 테스트 함수
