@@ -1,0 +1,191 @@
+import { useState, useEffect } from 'react';
+import { statsApi } from '../services/api';
+
+export default function StatsPage({ userId }) {
+  const [stats, setStats] = useState(null);
+  const [visitedStations, setVisitedStations] = useState([]);
+  const [lineStats, setLineStats] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    loadStats();
+  }, [userId]);
+
+  const loadStats = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const [statsData, visitedData, lineData] = await Promise.all([
+        statsApi.getUserStats(userId),
+        statsApi.getVisitedStations(userId),
+        statsApi.getLineStats(userId)
+      ]);
+
+      setStats(statsData);
+      setVisitedStations(visitedData);
+      setLineStats(lineData);
+    } catch (error) {
+      console.error('통계 로드 실패:', error);
+      setError('통계를 불러오는데 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 font-semibold">통계를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+          <p className="text-red-600 font-bold text-xl mb-4">⚠️ {error}</p>
+          <button
+            onClick={loadStats}
+            className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition"
+          >
+            다시 시도
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return null;
+  }
+
+  const formatTime = (seconds) => {
+    if (!seconds) return '0초';
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    if (minutes > 0) {
+      return `${minutes}분 ${secs}초`;
+    }
+    return `${secs}초`;
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-8 px-4">
+      <div className="container mx-auto max-w-6xl">
+        {/* 헤더 */}
+        <header className="text-center mb-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            📊 나의 통계
+          </h1>
+          <p className="text-gray-600 font-medium">당신의 빙빙 지하철 여정을 확인하세요</p>
+        </header>
+
+        {/* 기본 통계 카드 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {/* 총 도전 */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-blue-200">
+            <div className="text-3xl mb-2">🎯</div>
+            <p className="text-gray-600 text-sm font-semibold mb-1">총 도전</p>
+            <p className="text-3xl font-bold text-blue-600">{stats.total_challenges}</p>
+          </div>
+
+          {/* 성공률 */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-green-200">
+            <div className="text-3xl mb-2">✅</div>
+            <p className="text-gray-600 text-sm font-semibold mb-1">성공률</p>
+            <p className="text-3xl font-bold text-green-600">{Number(stats.success_rate || 0).toFixed(1)}%</p>
+            <p className="text-xs text-gray-500 mt-1">
+              {stats.completed_challenges}승 {stats.failed_challenges}패
+            </p>
+          </div>
+
+          {/* 방문한 역 */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-purple-200">
+            <div className="text-3xl mb-2">🚉</div>
+            <p className="text-gray-600 text-sm font-semibold mb-1">방문한 역</p>
+            <p className="text-3xl font-bold text-purple-600">{stats.unique_visited_stations}</p>
+            <p className="text-xs text-gray-500 mt-1">고유 역 {stats.unique_visited_stations}개</p>
+          </div>
+
+          {/* 점수 */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-yellow-200">
+            <div className="text-3xl mb-2">⭐</div>
+            <p className="text-gray-600 text-sm font-semibold mb-1">총 점수</p>
+            <p className="text-3xl font-bold text-yellow-600">{stats.total_score}</p>
+            <p className="text-xs text-gray-500 mt-1">최고 기록: {formatTime(stats.best_time)}</p>
+          </div>
+        </div>
+
+        {/* 노선별 통계 */}
+        {lineStats && lineStats.length > 0 && (
+          <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border-2 border-blue-200">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <span>🚇</span>
+              노선별 통계
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {lineStats.map((line) => (
+                <div key={line.line_num} className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-200">
+                  <p className="font-bold text-blue-700 mb-2">{line.line_num}</p>
+                  <div className="text-sm text-gray-700 space-y-1">
+                    <p>도전: {line.total_challenges}회</p>
+                    <p>성공: {line.completed_challenges}회</p>
+                    <p>성공률: {Number(line.success_rate || 0).toFixed(1)}%</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 방문한 역 목록 */}
+        {visitedStations && visitedStations.length > 0 && (
+          <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-purple-200">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <span>📍</span>
+              방문한 역 ({visitedStations.length}개)
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-96 overflow-y-auto">
+              {visitedStations.map((station) => (
+                <div
+                  key={station.id}
+                  className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-3 border border-purple-200 text-center"
+                >
+                  <p className="font-bold text-purple-700 text-sm mb-1">{station.station_nm}</p>
+                  <p className="text-xs text-gray-600">{station.line_num}</p>
+                  {station.visit_count > 1 && (
+                    <p className="text-xs text-purple-600 mt-1">✓ {station.visit_count}회</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 데이터 없을 때 */}
+        {stats.total_challenges === 0 && (
+          <div className="bg-white rounded-2xl shadow-lg p-12 text-center border-2 border-gray-200">
+            <div className="text-6xl mb-4">🎡</div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">아직 도전이 없습니다</h3>
+            <p className="text-gray-600 mb-6">첫 도전을 시작하고 통계를 확인해보세요!</p>
+            <button
+              onClick={() => window.location.href = '/'}
+              className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl font-bold text-lg
+                         hover:from-blue-700 hover:to-purple-700 transition shadow-lg"
+            >
+              도전 시작하기
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

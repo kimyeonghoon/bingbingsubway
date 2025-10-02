@@ -1,5 +1,6 @@
 const { pool } = require('../config/database');
 const { calculateDistance } = require('../utils/distance');
+const { updateStatsOnChallengeComplete, updateStatsOnChallengeFail } = require('../utils/statsHelper');
 
 const VERIFICATION_RADIUS = 100; // 미터
 const TIME_LIMIT = 3 * 60 * 60 * 1000; // 3시간 (밀리초)
@@ -63,7 +64,12 @@ async function createVisit(req, res, next) {
         [challengeId]
       );
 
-      await connection.rollback();
+      // 통계 업데이트 (실패)
+      await updateStatsOnChallengeFail(userId, connection);
+
+      await connection.commit();
+      connection.release();
+
       return res.status(400).json({
         error: '시간 제한(3시간)이 초과되었습니다.',
         timeLimit: TIME_LIMIT / 1000 / 60, // 분 단위
@@ -143,14 +149,22 @@ async function createVisit(req, res, next) {
 
     const completedStations = verifiedCount[0].count;
 
+    // 10개 역 중 1개만 방문하면 완료 (룰렛에서 선택된 1개 역만 방문)
+    const isChallengeCompleted = completedStations >= 1;
+
     await connection.execute(
       `UPDATE challenges
        SET completed_stations = ?,
-           status = CASE WHEN ? = total_stations THEN 'completed' ELSE status END,
-           completed_at = CASE WHEN ? = total_stations THEN NOW() ELSE completed_at END
+           status = CASE WHEN ? >= 1 THEN 'completed' ELSE status END,
+           completed_at = CASE WHEN ? >= 1 THEN NOW() ELSE completed_at END
        WHERE id = ?`,
       [completedStations, completedStations, completedStations, challengeId]
     );
+
+    // 8. 챌린지 완료 시 통계 업데이트
+    if (isChallengeCompleted) {
+      await updateStatsOnChallengeComplete(userId, challengeId, connection);
+    }
 
     await connection.commit();
 

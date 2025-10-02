@@ -4,7 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import HomePage from './pages/HomePage';
 import ChallengePage from './pages/ChallengePage';
-import StatsDashboard from './components/StatsDashboard';
+import StatsPage from './pages/StatsPage';
 import AchievementsPage from './pages/AchievementsPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import ProfilePage from './pages/ProfilePage';
@@ -119,7 +119,7 @@ function ChallengePageWrapper() {
 
 function StatsDashboardWrapper() {
   const { user } = useAuth();
-  return <StatsDashboard userId={user?.id} />;
+  return <StatsPage userId={user?.id} />;
 }
 
 function AchievementsPageWrapper() {

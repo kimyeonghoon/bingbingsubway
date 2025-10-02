@@ -8,7 +8,7 @@ export default function HomePage({ userId }) {
   const [step, setStep] = useState('setup'); // setup, roulette
   const [lines, setLines] = useState([]);
   const [selectedLine, setSelectedLine] = useState('');
-  const [stationCount] = useState(10);
+  const [stationCount] = useState(10); // 10개 역 추출 후 1개 선택
 
   const [stations, setStations] = useState([]);
   const [selectedStation, setSelectedStation] = useState(null);
@@ -222,7 +222,7 @@ export default function HomePage({ userId }) {
             </p>
             <p className="text-gray-700 flex items-center gap-2">
               <span className="text-2xl">🎡</span>
-              룰렛을 돌려 <span className="font-bold text-purple-600">랜덤 1개 역</span>을 선택하고 방문하세요!
+              룰렛을 돌려 <span className="font-bold text-purple-600">10개 중 1개 역</span>을 선택하고 방문하세요!
             </p>
           </div>
 
@@ -246,7 +246,7 @@ export default function HomePage({ userId }) {
             룰렛을 돌려 역을 확인하세요!
           </h2>
           <p className="text-center text-gray-700 mb-6 font-semibold">
-            <span className="text-blue-600">{selectedLine}</span> • 1개 역 선택
+            <span className="text-blue-600">{selectedLine}</span> • 10개 역 중 1개 선택
           </p>
 
           <RouletteWheel

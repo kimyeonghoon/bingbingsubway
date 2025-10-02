@@ -265,4 +265,27 @@ export const leaderboardApi = {
   }
 };
 
+// 통계 API
+export const statsApi = {
+  getUserStats: async (userId) => {
+    const response = await api.get(`/users/${userId}/stats`);
+    return response.data;
+  },
+
+  getVisitedStations: async (userId) => {
+    const response = await api.get(`/users/${userId}/visited-stations`);
+    return response.data;
+  },
+
+  getLineStats: async (userId) => {
+    const response = await api.get(`/users/${userId}/line-stats`);
+    return response.data;
+  },
+
+  getRecentActivities: async (userId) => {
+    const response = await api.get(`/users/${userId}/recent-activities`);
+    return response.data;
+  }
+};
+
 export default api;
