@@ -7,10 +7,14 @@ CREATE TABLE IF NOT EXISTS users (
   username VARCHAR(50) UNIQUE NOT NULL,
   email VARCHAR(100) UNIQUE,
   password_hash VARCHAR(255) COMMENT '비밀번호 해시',
+  provider VARCHAR(20) DEFAULT 'local' COMMENT '인증 제공자 (local/google/kakao/naver)',
+  provider_id VARCHAR(255) COMMENT '소셜 로그인 ID',
+  email_verified BOOLEAN DEFAULT FALSE COMMENT '이메일 인증 여부',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_username (username),
-  INDEX idx_email (email)
+  INDEX idx_email (email),
+  INDEX idx_provider (provider, provider_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 2. stations (역 정보 테이블)
