@@ -18,10 +18,20 @@ export default function HomePage({ userId }) {
 
   // 저장된 도전 정보 복구
   useEffect(() => {
+    if (!userId) return;
+
     const savedChallenge = localStorage.getItem('bingbing_currentChallenge');
     if (savedChallenge) {
       try {
         const challenge = JSON.parse(savedChallenge);
+
+        // 저장된 도전의 userId와 현재 로그인한 userId가 다르면 초기화
+        if (challenge.userId && challenge.userId !== userId) {
+          console.log('다른 사용자의 도전 정보 삭제');
+          localStorage.removeItem('bingbing_currentChallenge');
+          return;
+        }
+
         setSelectedLine(challenge.selectedLine);
         setChallengeId(challenge.challengeId);
         setStations(challenge.stations || []);
@@ -33,12 +43,13 @@ export default function HomePage({ userId }) {
         localStorage.removeItem('bingbing_currentChallenge');
       }
     }
-  }, []);
+  }, [userId]);
 
   // 도전 정보 저장
   useEffect(() => {
-    if (step !== 'setup') {
+    if (step !== 'setup' && userId) {
       const challengeData = {
+        userId, // 현재 로그인한 사용자 ID 저장
         step,
         selectedLine,
         challengeId,
@@ -48,7 +59,7 @@ export default function HomePage({ userId }) {
       };
       localStorage.setItem('bingbing_currentChallenge', JSON.stringify(challengeData));
     }
-  }, [step, selectedLine, challengeId, stations, selectedStation, challengeStartTime]);
+  }, [step, selectedLine, challengeId, stations, selectedStation, challengeStartTime, userId]);
 
   // 노선 목록 로드
   useEffect(() => {
