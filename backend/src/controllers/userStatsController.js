@@ -26,6 +26,7 @@ async function getUserStats(req, res, next) {
         total_visited_stations: 0,
         unique_visited_stations: 0,
         total_play_time: 0,
+        best_time: 0,
         current_streak: 0,
         max_streak: 0,
         total_score: 0,
@@ -33,7 +34,21 @@ async function getUserStats(req, res, next) {
         last_challenge_at: null
       };
     } else {
-      stats = statsRows[0];
+      // 숫자 타입 변환
+      stats = {
+        ...statsRows[0],
+        total_challenges: parseInt(statsRows[0].total_challenges) || 0,
+        completed_challenges: parseInt(statsRows[0].completed_challenges) || 0,
+        failed_challenges: parseInt(statsRows[0].failed_challenges) || 0,
+        success_rate: parseFloat(statsRows[0].success_rate) || 0,
+        total_visited_stations: parseInt(statsRows[0].total_visited_stations) || 0,
+        unique_visited_stations: parseInt(statsRows[0].unique_visited_stations) || 0,
+        total_play_time: parseInt(statsRows[0].total_play_time) || 0,
+        best_time: parseInt(statsRows[0].best_time) || 0,
+        current_streak: parseInt(statsRows[0].current_streak) || 0,
+        max_streak: parseInt(statsRows[0].max_streak) || 0,
+        total_score: parseInt(statsRows[0].total_score) || 0
+      };
     }
 
     res.json(stats);
@@ -77,7 +92,10 @@ async function getVisitedStations(req, res, next) {
     );
 
     res.json({
-      stations,
+      stations: stations.map(s => ({
+        ...s,
+        visit_count: parseInt(s.visit_count) || 0
+      })),
       total: countRows[0].total,
       limit: parseInt(limit),
       offset: parseInt(offset)
@@ -112,7 +130,16 @@ async function getLineStats(req, res, next) {
       [userId]
     );
 
-    res.json(lineStats);
+    // 숫자 타입 변환
+    const lineStatsWithNumbers = lineStats.map(line => ({
+      ...line,
+      total_challenges: parseInt(line.total_challenges) || 0,
+      completed_challenges: parseInt(line.completed_challenges) || 0,
+      failed_challenges: parseInt(line.failed_challenges) || 0,
+      success_rate: parseFloat(line.success_rate) || 0
+    }));
+
+    res.json(lineStatsWithNumbers);
   } catch (error) {
     next(error);
   }
@@ -147,7 +174,14 @@ async function getRecentActivities(req, res, next) {
       [userId]
     );
 
-    res.json(activities);
+    // 숫자 타입 변환
+    const activitiesWithNumbers = activities.map(activity => ({
+      ...activity,
+      total_stations: parseInt(activity.total_stations) || 0,
+      completed_stations: parseInt(activity.completed_stations) || 0
+    }));
+
+    res.json(activitiesWithNumbers);
   } catch (error) {
     next(error);
   }
