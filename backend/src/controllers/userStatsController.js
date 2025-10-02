@@ -97,14 +97,18 @@ async function getLineStats(req, res, next) {
 
     const [lineStats] = await pool.execute(
       `SELECT
-        s.line_num,
-        COUNT(DISTINCT uvs.station_id) as visited_count,
-        COUNT(DISTINCT s.id) as total_count,
-        ROUND(COUNT(DISTINCT uvs.station_id) * 100.0 / COUNT(DISTINCT s.id), 2) as completion_rate
-      FROM stations s
-      LEFT JOIN user_visited_stations uvs ON s.id = uvs.station_id AND uvs.user_id = ?
-      GROUP BY s.line_num
-      ORDER BY completion_rate DESC, s.line_num`,
+        c.line_num,
+        COUNT(*) as total_challenges,
+        SUM(CASE WHEN c.status = 'completed' THEN 1 ELSE 0 END) as completed_challenges,
+        SUM(CASE WHEN c.status = 'failed' THEN 1 ELSE 0 END) as failed_challenges,
+        ROUND(
+          SUM(CASE WHEN c.status = 'completed' THEN 1 ELSE 0 END) * 100.0 / COUNT(*),
+          2
+        ) as success_rate
+      FROM challenges c
+      WHERE c.user_id = ?
+      GROUP BY c.line_num
+      ORDER BY success_rate DESC, c.line_num`,
       [userId]
     );
 
