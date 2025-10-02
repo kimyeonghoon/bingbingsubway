@@ -6,6 +6,11 @@ const visitController = require('../controllers/visitController');
 const userStatsController = require('../controllers/userStatsController');
 const achievementController = require('../controllers/achievementController');
 const leaderboardController = require('../controllers/leaderboardController');
+const authController = require('../controllers/authController');
+
+// 인증 관련 라우트
+router.post('/auth/register', authController.register);
+router.post('/auth/login', authController.login);
 
 // 역 정보 관련 라우트
 router.get('/lines', stationController.getLines);
