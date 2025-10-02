@@ -35,7 +35,7 @@ async function getLeaderboard(req, res, next) {
         us.unique_visited_stations,
         us.max_streak,
         us.total_score,
-        us.last_challenge_at,
+        us.last_play_at,
         (SELECT COUNT(DISTINCT ua.achievement_id)
          FROM user_achievements ua
          WHERE ua.user_id = us.user_id) as achievement_count

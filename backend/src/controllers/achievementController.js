@@ -43,7 +43,6 @@ async function getUserAchievements(req, res, next) {
       `SELECT
         a.*,
         ua.achieved_at,
-        ua.progress,
         CASE WHEN ua.achievement_id IS NOT NULL THEN TRUE ELSE FALSE END as is_achieved
       FROM achievements a
       LEFT JOIN user_achievements ua ON a.id = ua.achievement_id AND ua.user_id = ?
