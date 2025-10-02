@@ -6,12 +6,13 @@ import ProgressBar from '../components/ProgressBar';
 import { challengeApi, visitApi } from '../services/api';
 import { useGeolocation } from '../hooks/useGeolocation';
 
-function ChallengePage() {
+function ChallengePage({ userId }) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const challengeId = searchParams.get('id');
+
+  // URL 쿼리 파라미터보다 localStorage 우선 사용
+  const [challengeId, setChallengeId] = useState(searchParams.get('id'));
   const stationId = searchParams.get('station');
-  const userId = searchParams.get('user');
 
   const [challengeStations, setChallengeStations] = useState([]);
   const [challengeStartTime, setChallengeStartTime] = useState(new Date());
@@ -23,19 +24,43 @@ function ChallengePage() {
 
   // 저장된 도전 정보 복구
   useEffect(() => {
-    const savedProgress = localStorage.getItem(`bingbing_challenge_${challengeId}`);
-    if (savedProgress) {
+    if (!userId) return;
+
+    // 먼저 현재 진행 중인 도전 확인
+    const savedChallenge = localStorage.getItem('bingbing_currentChallenge');
+    if (savedChallenge) {
       try {
-        const progress = JSON.parse(savedProgress);
-        setChallengeStations(progress.challengeStations || []);
-        setCompletedCount(progress.completedCount || 0);
-        setSelectedLine(progress.selectedLine || '');
-        setChallengeStartTime(progress.challengeStartTime ? new Date(progress.challengeStartTime) : new Date());
+        const challenge = JSON.parse(savedChallenge);
+
+        // 다른 사용자의 도전이면 무시
+        if (challenge.userId && challenge.userId !== userId) {
+          console.log('다른 사용자의 도전 정보');
+          navigate('/');
+          return;
+        }
+
+        // challengeId 복구
+        if (challenge.challengeId && !challengeId) {
+          setChallengeId(challenge.challengeId);
+        }
+
+        // 상세 진행 상태 복구
+        const savedProgress = localStorage.getItem(`bingbing_challenge_${challenge.challengeId || challengeId}`);
+        if (savedProgress) {
+          const progress = JSON.parse(savedProgress);
+          setChallengeStations(progress.challengeStations || []);
+          setCompletedCount(progress.completedCount || 0);
+          setSelectedLine(progress.selectedLine || challenge.selectedLine || '');
+          setChallengeStartTime(progress.challengeStartTime ? new Date(progress.challengeStartTime) : new Date());
+        }
       } catch (error) {
         console.error('Failed to restore progress:', error);
       }
+    } else if (!challengeId) {
+      // 저장된 도전이 없고 URL에도 challengeId가 없으면 홈으로
+      navigate('/');
     }
-  }, [challengeId]);
+  }, [challengeId, userId]);
 
   useEffect(() => {
     loadChallengeData();

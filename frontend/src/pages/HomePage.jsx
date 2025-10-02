@@ -37,7 +37,17 @@ export default function HomePage({ userId }) {
         setStations(challenge.stations || []);
         setSelectedStation(challenge.selectedStation || null);
         setChallengeStartTime(challenge.challengeStartTime ? new Date(challenge.challengeStartTime) : null);
-        setStep('setup');
+
+        // 진행 중인 도전이 있으면 도전 페이지로 이동
+        if (challenge.challengeId && challenge.selectedStation) {
+          console.log('진행 중인 도전 발견, 도전 페이지로 이동');
+          navigate('/challenge');
+        } else if (challenge.selectedLine && challenge.stations && challenge.stations.length > 0) {
+          // 룰렛 단계
+          setStep('roulette');
+        } else {
+          setStep('setup');
+        }
       } catch (error) {
         console.error('Failed to restore challenge:', error);
         localStorage.removeItem('bingbing_currentChallenge');
