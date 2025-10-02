@@ -7,6 +7,7 @@ const userStatsController = require('../controllers/userStatsController');
 const achievementController = require('../controllers/achievementController');
 const leaderboardController = require('../controllers/leaderboardController');
 const authController = require('../controllers/authController');
+const userController = require('../controllers/userController');
 const { authenticateToken } = require('../middleware/auth');
 
 // 인증 관련 라우트
@@ -34,6 +35,10 @@ router.post('/challenges/:id/fail', challengeController.failChallenge);
 // 방문 인증 라우트
 router.post('/visits', visitController.createVisit);
 router.get('/visits/:userId', visitController.getVisitsByUser);
+
+// 사용자 프로필 라우트
+router.get('/users/:userId', authenticateToken, userController.getUserProfile);
+router.put('/users/:userId', authenticateToken, userController.updateUserProfile);
 
 // 사용자 통계 라우트
 router.get('/users/:userId/stats', userStatsController.getUserStats);
