@@ -115,27 +115,45 @@ async function getLineStats(req, res, next) {
 
     const [lineStats] = await pool.execute(
       `SELECT
-        c.line_num,
-        COUNT(*) as total_challenges,
-        SUM(CASE WHEN c.status = 'completed' THEN 1 ELSE 0 END) as completed_challenges,
-        SUM(CASE WHEN c.status = 'failed' THEN 1 ELSE 0 END) as failed_challenges,
+        s.line_num,
+        COUNT(DISTINCT s.id) as total_stations,
+        COUNT(DISTINCT uvs.station_id) as visited_stations,
         ROUND(
-          SUM(CASE WHEN c.status = 'completed' THEN 1 ELSE 0 END) * 100.0 / COUNT(*),
+          COALESCE(COUNT(DISTINCT uvs.station_id) * 100.0 / NULLIF(COUNT(DISTINCT s.id), 0), 0),
           2
+        ) as completion_rate,
+        COALESCE(
+          (SELECT COUNT(*) FROM challenges c WHERE c.line_num = s.line_num AND c.user_id = ?),
+          0
+        ) as total_challenges,
+        COALESCE(
+          (SELECT COUNT(*) FROM challenges c WHERE c.line_num = s.line_num AND c.user_id = ? AND c.status = 'completed'),
+          0
+        ) as completed_challenges,
+        COALESCE(
+          ROUND(
+            (SELECT COUNT(*) FROM challenges c WHERE c.line_num = s.line_num AND c.user_id = ? AND c.status = 'completed') * 100.0 /
+            NULLIF((SELECT COUNT(*) FROM challenges c WHERE c.line_num = s.line_num AND c.user_id = ?), 0),
+            2
+          ),
+          0
         ) as success_rate
-      FROM challenges c
-      WHERE c.user_id = ?
-      GROUP BY c.line_num
-      ORDER BY success_rate DESC, c.line_num`,
-      [userId]
+      FROM stations s
+      LEFT JOIN user_visited_stations uvs ON s.id = uvs.station_id AND uvs.user_id = ?
+      GROUP BY s.line_num
+      HAVING total_challenges > 0 OR visited_stations > 0
+      ORDER BY completion_rate DESC, s.line_num`,
+      [userId, userId, userId, userId, userId]
     );
 
     // 숫자 타입 변환
     const lineStatsWithNumbers = lineStats.map(line => ({
       ...line,
+      total_stations: parseInt(line.total_stations) || 0,
+      visited_stations: parseInt(line.visited_stations) || 0,
+      completion_rate: parseFloat(line.completion_rate) || 0,
       total_challenges: parseInt(line.total_challenges) || 0,
       completed_challenges: parseInt(line.completed_challenges) || 0,
-      failed_challenges: parseInt(line.failed_challenges) || 0,
       success_rate: parseFloat(line.success_rate) || 0
     }));
 
