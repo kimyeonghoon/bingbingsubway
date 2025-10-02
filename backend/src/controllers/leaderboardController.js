@@ -51,10 +51,16 @@ async function getLeaderboard(req, res, next) {
 
     const [rankings] = await pool.query(query);
 
-    // 순위 추가
+    // 순위 추가 및 숫자 타입 변환
     const rankingsWithRank = rankings.map((user, index) => ({
       rank: parseInt(offset) + index + 1,
-      ...user
+      ...user,
+      success_rate: parseFloat(user.success_rate) || 0,
+      total_score: parseInt(user.total_score) || 0,
+      max_streak: parseInt(user.max_streak) || 0,
+      unique_visited_stations: parseInt(user.unique_visited_stations) || 0,
+      total_challenges: parseInt(user.total_challenges) || 0,
+      completed_challenges: parseInt(user.completed_challenges) || 0
     }));
 
     // 전체 사용자 수
@@ -105,10 +111,14 @@ async function getWeeklyLeaderboard(req, res, next) {
       LIMIT ${parsedLimit}`
     );
 
-    // 순위 추가
+    // 순위 추가 및 숫자 타입 변환
     const rankingsWithRank = rankings.map((user, index) => ({
       rank: index + 1,
-      ...user
+      ...user,
+      weekly_challenges: parseInt(user.weekly_challenges) || 0,
+      weekly_completed: parseInt(user.weekly_completed) || 0,
+      weekly_score: parseInt(user.weekly_score) || 0,
+      weekly_success_rate: parseFloat(user.weekly_success_rate) || 0
     }));
 
     res.json({
@@ -192,7 +202,13 @@ async function getUserRank(req, res, next) {
         stations: stationRank[0].user_rank,
         success_rate: successRateRank[0].user_rank
       },
-      stats: userStats[0]
+      stats: {
+        ...userStats[0],
+        success_rate: parseFloat(userStats[0].success_rate) || 0,
+        total_score: parseInt(userStats[0].total_score) || 0,
+        max_streak: parseInt(userStats[0].max_streak) || 0,
+        unique_visited_stations: parseInt(userStats[0].unique_visited_stations) || 0
+      }
     });
   } catch (error) {
     next(error);
