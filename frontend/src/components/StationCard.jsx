@@ -3,16 +3,16 @@ const StationCard = ({ station, isVerified, onVerify, isVerifying }) => {
     <div className={`p-5 rounded-xl border-2 backdrop-blur-sm transition-all duration-300 ${
       isVerified
         ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-400/40 shadow-lg shadow-green-500/20'
-        : 'bg-white/10 border-white/20 hover:border-white/40 hover:shadow-xl hover:shadow-blue-500/20'
+        : 'bg-white/80 border-gray-200 hover:border-blue-400 hover:shadow-xl hover:shadow-blue-500/20'
     }`}>
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <h3 className="text-xl font-bold text-white mb-1">
+          <h3 className="text-xl font-bold text-gray-900 mb-1">
             {station.station_nm}
           </h3>
-          <p className="text-sm text-white/70 font-semibold">{station.line_num}</p>
+          <p className="text-sm text-gray-600 font-semibold">{station.line_num}</p>
           {station.station_cd && (
-            <p className="text-xs text-white/50 mt-1">
+            <p className="text-xs text-gray-500 mt-1">
               역 코드: {station.station_cd}
             </p>
           )}
@@ -49,7 +49,7 @@ const StationCard = ({ station, isVerified, onVerify, isVerifying }) => {
       </div>
 
       {station.visited_at && (
-        <p className="text-xs text-white/50 mt-3">
+        <p className="text-xs text-gray-500 mt-3">
           인증 시각: {new Date(station.visited_at).toLocaleString('ko-KR')}
         </p>
       )}
