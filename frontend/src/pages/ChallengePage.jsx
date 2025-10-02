@@ -151,6 +151,31 @@ function ChallengePage({ userId }) {
     }
   };
 
+  const handleCancelChallenge = async () => {
+    if (!window.confirm('정말로 이 도전을 취소하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      await challengeApi.cancelChallenge(challengeId);
+
+      // localStorage 정리
+      if (userId) {
+        const storageKey = `bingbing_currentChallenge_${userId}`;
+        const progressKey = `bingbing_challenge_${userId}_${challengeId}`;
+        localStorage.removeItem(storageKey);
+        localStorage.removeItem(progressKey);
+      }
+
+      alert('도전이 취소되었습니다.');
+      navigate('/');
+    } catch (error) {
+      console.error('Failed to cancel challenge:', error);
+      const errorMsg = error.response?.data?.error || '도전 취소에 실패했습니다.';
+      alert(errorMsg);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
       <div className="container mx-auto px-4 py-8">
@@ -194,14 +219,24 @@ function ChallengePage({ userId }) {
               ))}
             </div>
 
-            <button
-              onClick={() => navigate('/')}
-              className="w-full mt-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-2xl font-bold
-                         hover:from-gray-700 hover:to-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl
-                         transform hover:scale-105"
-            >
-              메인으로
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3 mt-6">
+              <button
+                onClick={handleCancelChallenge}
+                className="flex-1 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl font-bold
+                           hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-xl
+                           transform hover:scale-105"
+              >
+                도전 취소
+              </button>
+              <button
+                onClick={() => navigate('/')}
+                className="flex-1 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-2xl font-bold
+                           hover:from-gray-700 hover:to-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl
+                           transform hover:scale-105"
+              >
+                메인으로
+              </button>
+            </div>
           </div>
 
           {geoError && (

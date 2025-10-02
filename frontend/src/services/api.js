@@ -162,6 +162,11 @@ export const challengeApi = {
       reason
     });
     return response.data;
+  },
+
+  cancelChallenge: async (challengeId) => {
+    const response = await api.post(`/challenges/${challengeId}/cancel`);
+    return response.data;
   }
 };
 
