@@ -1,4 +1,5 @@
 const { pool: db } = require('../config/database');
+const bcrypt = require('bcryptjs');
 
 /**
  * 사용자 프로필 조회
@@ -108,7 +109,115 @@ async function updateUserProfile(req, res) {
   }
 }
 
+/**
+ * 비밀번호 변경
+ * PUT /api/users/:userId/password
+ */
+async function changePassword(req, res) {
+  try {
+    const userId = parseInt(req.params.userId);
+    const requestUserId = req.user.id;
+    const { currentPassword, newPassword } = req.body;
+
+    // 권한 확인
+    if (userId !== requestUserId) {
+      return res.status(403).json({ error: '다른 사용자의 비밀번호를 변경할 권한이 없습니다' });
+    }
+
+    // 입력 검증
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current password and new password are required' });
+    }
+
+    // 새 비밀번호 길이 검증
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: '새 비밀번호는 최소 8자 이상이어야 합니다' });
+    }
+
+    // 현재 비밀번호 확인
+    const [users] = await db.query(
+      'SELECT password_hash FROM users WHERE id = ?',
+      [userId]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({ error: '사용자를 찾을 수 없습니다' });
+    }
+
+    const isPasswordValid = await bcrypt.compare(currentPassword, users[0].password_hash);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: '현재 비밀번호가 일치하지 않습니다' });
+    }
+
+    // 새 비밀번호 해싱
+    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+
+    // 비밀번호 업데이트
+    await db.query(
+      'UPDATE users SET password_hash = ? WHERE id = ?',
+      [newPasswordHash, userId]
+    );
+
+    // 보안을 위해 모든 리프레시 토큰 삭제
+    await db.query('DELETE FROM refresh_tokens WHERE user_id = ?', [userId]);
+
+    res.status(200).json({ message: '비밀번호가 변경되었습니다' });
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+/**
+ * 회원탈퇴
+ * DELETE /api/users/:userId
+ */
+async function deleteUser(req, res) {
+  try {
+    const userId = parseInt(req.params.userId);
+    const requestUserId = req.user.id;
+    const { password } = req.body;
+
+    // 권한 확인
+    if (userId !== requestUserId) {
+      return res.status(403).json({ error: '다른 사용자를 탈퇴시킬 권한이 없습니다' });
+    }
+
+    // 입력 검증
+    if (!password) {
+      return res.status(400).json({ error: 'Password is required' });
+    }
+
+    // 비밀번호 확인
+    const [users] = await db.query(
+      'SELECT password_hash FROM users WHERE id = ?',
+      [userId]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({ error: '사용자를 찾을 수 없습니다' });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, users[0].password_hash);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: '비밀번호가 일치하지 않습니다' });
+    }
+
+    // 사용자 삭제 (CASCADE로 관련 데이터 자동 삭제)
+    await db.query('DELETE FROM users WHERE id = ?', [userId]);
+
+    res.status(200).json({ message: '회원탈퇴가 완료되었습니다' });
+  } catch (error) {
+    console.error('Delete user error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
 module.exports = {
   getUserProfile,
   updateUserProfile,
+  changePassword,
+  deleteUser,
 };

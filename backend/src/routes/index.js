@@ -39,6 +39,8 @@ router.get('/visits/:userId', visitController.getVisitsByUser);
 // 사용자 프로필 라우트
 router.get('/users/:userId', authenticateToken, userController.getUserProfile);
 router.put('/users/:userId', authenticateToken, userController.updateUserProfile);
+router.put('/users/:userId/password', authenticateToken, userController.changePassword);
+router.delete('/users/:userId', authenticateToken, userController.deleteUser);
 
 // 사용자 통계 라우트
 router.get('/users/:userId/stats', userStatsController.getUserStats);
