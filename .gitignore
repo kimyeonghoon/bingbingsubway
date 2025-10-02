@@ -41,3 +41,7 @@ stations_with_coords.json
 coverage/
 .nyc_output/
 
+# Docker 관련
+.env.production
+db_data/
+
