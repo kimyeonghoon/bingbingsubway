@@ -67,7 +67,7 @@ services:
     container_name: bingbing_frontend
     restart: always
     ports:
-      - "${FRONTEND_PORT:-80}:80"
+      - "${FRONTEND_PORT:-5080}:80"
     depends_on:
       - backend
     networks:

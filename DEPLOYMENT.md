@@ -64,8 +64,9 @@ JWT_REFRESH_SECRET=$(openssl rand -base64 32)
 FRONTEND_URL=http://your-domain.com
 # 또는 IP: http://123.45.67.89
 
-# 포트 (기본: 80, HTTPS: 443)
-FRONTEND_PORT=80
+# 포트 (기본: 5080)
+# 실제 서버의 Nginx에서 이 포트로 리버스 프록시 설정
+FRONTEND_PORT=5080
 ```
 
 ### 2. 데이터베이스 초기화 확인
@@ -135,9 +136,29 @@ docker exec bingbing_mysql mysql -u bingbing_user -p -e "SHOW DATABASES;"
 ### 4. 브라우저 접속
 
 ```
-http://your-domain.com
+http://localhost:5080 (로컬 테스트)
 또는
-http://your-server-ip
+http://your-server-ip:5080 (직접 접속)
+```
+
+**실제 서버 Nginx 리버스 프록시 설정 예시:**
+```nginx
+# /etc/nginx/sites-available/bingbing-subway
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    location / {
+        proxy_pass http://localhost:5080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
 ```
 
 ---
