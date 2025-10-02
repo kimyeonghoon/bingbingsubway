@@ -134,8 +134,7 @@ function ChallengePage({ userId }) {
         location?.accuracy || 10
       );
 
-      alert(`${result.stationName} 인증 완료! (거리: ${result.distance}m)`);
-
+      // 서버에서 최신 도전 상태 다시 불러오기
       const stations = await challengeApi.getChallengeStations(challengeId);
       const finalStation = stations.find(s => s.id === finalStationId);
 
@@ -145,8 +144,11 @@ function ChallengePage({ userId }) {
       }
 
       if (finalStation?.is_verified) {
-        alert('🎉 역 방문 완료! 축하합니다!');
-        navigate('/');
+        alert(`🎉 ${result.stationName} 인증 완료!\n거리: ${result.distance}m\n\n역 방문 도전을 완료했습니다!`);
+        // 잠시 후 홈으로 이동
+        setTimeout(() => navigate('/'), 1500);
+      } else {
+        alert(`${result.stationName} 인증 완료! (거리: ${result.distance}m)`);
       }
     } catch (error) {
       console.error('Failed to verify visit:', error);
