@@ -82,8 +82,12 @@ async function getChallengesByUser(req, res, next) {
     const { userId } = req.params;
     const requestUserId = req.user.id; // 인증된 사용자 ID
 
+    // 디버깅 로그
+    console.log('[getChallengesByUser] URL userId:', userId, 'JWT userId:', requestUserId);
+
     // 권한 확인: 본인의 도전만 조회 가능
     if (parseInt(userId) !== requestUserId) {
+      console.log('[getChallengesByUser] 권한 오류: URL userId와 JWT userId 불일치');
       return res.status(403).json({ error: '다른 사용자의 도전을 조회할 권한이 없습니다' });
     }
 
@@ -105,8 +109,10 @@ async function getChallengesByUser(req, res, next) {
       [userId]
     );
 
+    console.log('[getChallengesByUser] 조회 결과:', rows.length, '개 도전');
     res.json(rows);
   } catch (error) {
+    console.error('[getChallengesByUser] 에러:', error);
     next(error);
   }
 }
