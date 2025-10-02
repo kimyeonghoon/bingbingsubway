@@ -99,8 +99,8 @@ async function getChallengesByUser(req, res, next) {
         c.completed_stations,
         c.final_station_id,
         c.status,
-        CONVERT_TZ(c.started_at, '+00:00', '+09:00') as created_at,
-        CONVERT_TZ(c.completed_at, '+00:00', '+09:00') as completed_at
+        UNIX_TIMESTAMP(c.started_at) * 1000 as created_at,
+        UNIX_TIMESTAMP(c.completed_at) * 1000 as completed_at
       FROM challenges c
       WHERE c.user_id = ?
       ORDER BY c.started_at DESC`,
