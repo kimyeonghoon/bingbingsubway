@@ -132,37 +132,46 @@ export default function StatsPage({ userId }) {
               노선별 통계
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {lineStats.map((line) => (
-                <div key={line.line_num} className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-200">
-                  <p className="font-bold text-blue-700 mb-3">{line.line_num}</p>
+              {lineStats.map((line) => {
+                const completionRate = parseFloat(line.completion_rate) || 0;
+                const successRate = parseFloat(line.success_rate) || 0;
+                const visitedStations = parseInt(line.visited_stations) || 0;
+                const totalStations = parseInt(line.total_stations) || 0;
+                const totalChallenges = parseInt(line.total_challenges) || 0;
+                const completedChallenges = parseInt(line.completed_challenges) || 0;
 
-                  {/* 진행률 바 */}
-                  <div className="mb-3">
-                    <div className="flex justify-between text-xs text-gray-600 mb-1">
-                      <span>진행률</span>
-                      <span className="font-bold text-blue-600">{Number(line.completion_rate || 0).toFixed(1)}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5">
-                      <div
-                        className="bg-gradient-to-r from-blue-500 to-purple-600 h-2.5 rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min(100, line.completion_rate || 0)}%` }}
-                      ></div>
-                    </div>
-                    <p className="text-xs text-gray-600 mt-1">
-                      {line.visited_stations}/{line.total_stations} 역 방문
-                    </p>
-                  </div>
+                return (
+                  <div key={line.line_num} className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-200">
+                    <p className="font-bold text-blue-700 mb-3">{line.line_num}</p>
 
-                  {/* 통계 */}
-                  <div className="text-sm text-gray-700 space-y-1">
-                    <p>도전: {line.total_challenges}회</p>
-                    <p>성공: {line.completed_challenges}회</p>
-                    {line.total_challenges > 0 && (
-                      <p>성공률: {Number(line.success_rate || 0).toFixed(1)}%</p>
-                    )}
+                    {/* 진행률 바 */}
+                    <div className="mb-3">
+                      <div className="flex justify-between text-xs text-gray-600 mb-1">
+                        <span>진행률</span>
+                        <span className="font-bold text-blue-600">{completionRate.toFixed(1)}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                        <div
+                          className="bg-gradient-to-r from-blue-500 to-purple-600 h-2.5 rounded-full transition-all duration-500"
+                          style={{ width: `${Math.min(100, completionRate)}%` }}
+                        ></div>
+                      </div>
+                      <p className="text-xs text-gray-600 mt-1">
+                        {visitedStations}/{totalStations} 역 방문
+                      </p>
+                    </div>
+
+                    {/* 통계 */}
+                    <div className="text-sm text-gray-700 space-y-1">
+                      <p>도전: {totalChallenges}회</p>
+                      <p>성공: {completedChallenges}회</p>
+                      {totalChallenges > 0 && (
+                        <p>성공률: {successRate.toFixed(1)}%</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
