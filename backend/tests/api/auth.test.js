@@ -6,7 +6,7 @@ describe('Auth API', () => {
   // 테스트 후 생성된 사용자 정리
   afterEach(async () => {
     await db.query('DELETE FROM users WHERE email LIKE ?', ['test%@example.com']);
-    await db.query('DELETE FROM users WHERE email = ?', ['login@example.com']);
+    await db.query('DELETE FROM users WHERE email IN (?)', [['login@example.com', 'refresh@example.com', 'logout@example.com', 'me@example.com']]);
   });
 
   afterAll(async () => {
@@ -265,6 +265,52 @@ describe('Auth API', () => {
         .send({});
 
       expect(res.status).toBe(400);
+      expect(res.body).toHaveProperty('error');
+    });
+  });
+
+  describe('GET /api/auth/me', () => {
+    let accessToken;
+
+    beforeEach(async () => {
+      // 사용자 등록 및 토큰 획득
+      const res = await request(app)
+        .post('/api/auth/register')
+        .send({
+          email: 'me@example.com',
+          password: 'Password123!',
+          username: 'meuser',
+        });
+
+      accessToken = res.body.accessToken;
+    });
+
+    it('유효한 토큰으로 현재 사용자 정보를 조회해야 함', async () => {
+      const res = await request(app)
+        .get('/api/auth/me')
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('id');
+      expect(res.body.email).toBe('me@example.com');
+      expect(res.body.username).toBe('meuser');
+      expect(res.body).not.toHaveProperty('password_hash');
+    });
+
+    it('토큰 없이 요청하면 401 에러를 반환해야 함', async () => {
+      const res = await request(app)
+        .get('/api/auth/me');
+
+      expect(res.status).toBe(401);
+      expect(res.body).toHaveProperty('error');
+    });
+
+    it('잘못된 토큰으로 요청하면 403 에러를 반환해야 함', async () => {
+      const res = await request(app)
+        .get('/api/auth/me')
+        .set('Authorization', 'Bearer invalid.token.here');
+
+      expect(res.status).toBe(403);
       expect(res.body).toHaveProperty('error');
     });
   });

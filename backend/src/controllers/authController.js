@@ -249,9 +249,36 @@ async function logout(req, res) {
   }
 }
 
+/**
+ * 현재 사용자 정보 조회
+ * GET /api/auth/me
+ */
+async function me(req, res) {
+  try {
+    // req.user는 authenticateToken 미들웨어에서 설정됨
+    const userId = req.user.id;
+
+    // DB에서 최신 사용자 정보 조회
+    const [users] = await db.query(
+      'SELECT id, email, username, provider, email_verified, created_at, last_login FROM users WHERE id = ?',
+      [userId]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.status(200).json(users[0]);
+  } catch (error) {
+    console.error('Get current user error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
 module.exports = {
   register,
   login,
   refresh,
   logout,
+  me,
 };

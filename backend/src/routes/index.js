@@ -7,12 +7,14 @@ const userStatsController = require('../controllers/userStatsController');
 const achievementController = require('../controllers/achievementController');
 const leaderboardController = require('../controllers/leaderboardController');
 const authController = require('../controllers/authController');
+const { authenticateToken } = require('../middleware/auth');
 
 // 인증 관련 라우트
 router.post('/auth/register', authController.register);
 router.post('/auth/login', authController.login);
 router.post('/auth/refresh', authController.refresh);
 router.post('/auth/logout', authController.logout);
+router.get('/auth/me', authenticateToken, authController.me);
 
 // 역 정보 관련 라우트
 router.get('/lines', stationController.getLines);
