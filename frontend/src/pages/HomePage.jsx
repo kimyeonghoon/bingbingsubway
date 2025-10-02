@@ -16,40 +16,87 @@ export default function HomePage({ userId }) {
   const [challengeId, setChallengeId] = useState(null);
   const [challengeStartTime, setChallengeStartTime] = useState(null);
 
-  // 저장된 도전 정보 복구
+  // 저장된 도전 정보 복구 (서버 + localStorage)
   useEffect(() => {
     if (!userId) return;
 
-    // 사용자별 localStorage 키 사용
-    const storageKey = `bingbing_currentChallenge_${userId}`;
-    const savedChallenge = localStorage.getItem(storageKey);
-
-    if (savedChallenge) {
+    const loadChallenges = async () => {
       try {
-        const challenge = JSON.parse(savedChallenge);
+        // 1. 서버에서 진행 중인 도전 조회
+        const challenges = await challengeApi.getChallengesByUser(userId);
+        const inProgressChallenges = challenges.filter(c => c.status === 'in_progress');
 
-        setSelectedLine(challenge.selectedLine);
-        setChallengeId(challenge.challengeId);
-        setStations(challenge.stations || []);
-        setSelectedStation(challenge.selectedStation || null);
-        setChallengeStartTime(challenge.challengeStartTime ? new Date(challenge.challengeStartTime) : null);
+        if (inProgressChallenges.length > 0) {
+          console.log('서버에 진행 중인 도전 발견:', inProgressChallenges);
 
-        // 진행 중인 도전이 있으면 도전 페이지로 이동
-        if (challenge.challengeId && challenge.selectedStation) {
-          console.log('진행 중인 도전 발견, 도전 페이지로 이동');
-          navigate('/challenge');
-        } else if (challenge.selectedLine && challenge.stations && challenge.stations.length > 0) {
-          // 룰렛 단계
-          setStep('roulette');
-        } else {
-          setStep('setup');
+          // 가장 최근 도전 선택
+          const latestChallenge = inProgressChallenges[0];
+
+          // 도전의 역 목록 조회
+          const stations = await challengeApi.getChallengeStations(latestChallenge.id);
+
+          setSelectedLine(latestChallenge.line_num);
+          setChallengeId(latestChallenge.id);
+          setStations(stations);
+          setChallengeStartTime(new Date(latestChallenge.created_at));
+
+          // 이미 방문 인증된 역이 있는지 확인
+          const verifiedStation = stations.find(s => s.is_verified);
+
+          if (verifiedStation) {
+            // 선택된 역이 있으면 도전 페이지로
+            setSelectedStation({
+              id: verifiedStation.id,
+              station_nm: verifiedStation.station_nm,
+              name: verifiedStation.station_nm
+            });
+            console.log('진행 중인 도전 발견, 도전 페이지로 이동');
+            navigate('/challenge');
+          } else {
+            // 아직 역을 선택하지 않았으면 룰렛 단계로
+            setStep('roulette');
+          }
+
+          return; // 서버 데이터 우선
+        }
+
+        // 2. 서버에 없으면 localStorage 확인
+        const storageKey = `bingbing_currentChallenge_${userId}`;
+        const savedChallenge = localStorage.getItem(storageKey);
+
+        if (savedChallenge) {
+          try {
+            const challenge = JSON.parse(savedChallenge);
+
+            setSelectedLine(challenge.selectedLine);
+            setChallengeId(challenge.challengeId);
+            setStations(challenge.stations || []);
+            setSelectedStation(challenge.selectedStation || null);
+            setChallengeStartTime(challenge.challengeStartTime ? new Date(challenge.challengeStartTime) : null);
+
+            // 진행 중인 도전이 있으면 도전 페이지로 이동
+            if (challenge.challengeId && challenge.selectedStation) {
+              console.log('localStorage에서 진행 중인 도전 발견, 도전 페이지로 이동');
+              navigate('/challenge');
+            } else if (challenge.selectedLine && challenge.stations && challenge.stations.length > 0) {
+              // 룰렛 단계
+              setStep('roulette');
+            } else {
+              setStep('setup');
+            }
+          } catch (error) {
+            console.error('Failed to restore challenge from localStorage:', error);
+            localStorage.removeItem(storageKey);
+          }
         }
       } catch (error) {
-        console.error('Failed to restore challenge:', error);
-        localStorage.removeItem(storageKey);
+        console.error('Failed to load challenges from server:', error);
+        // 서버 에러 시 localStorage만 사용
       }
-    }
-  }, [userId]);
+    };
+
+    loadChallenges();
+  }, [userId, navigate]);
 
   // 도전 정보 저장
   useEffect(() => {
