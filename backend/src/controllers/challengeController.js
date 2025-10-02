@@ -7,11 +7,12 @@ async function createChallenge(req, res, next) {
   const connection = await pool.getConnection();
 
   try {
-    const { userId, lineName, stationCount } = req.body;
+    const { lineName, stationCount } = req.body;
+    const userId = req.user.id; // JWT에서 가져온 사용자 ID
 
-    if (!userId || !lineName || !stationCount) {
+    if (!lineName || !stationCount) {
       return res.status(400).json({
-        error: 'userId, lineName, stationCount는 필수입니다.'
+        error: 'lineName, stationCount는 필수입니다.'
       });
     }
 
@@ -155,11 +156,7 @@ async function completeChallenge(req, res, next) {
 
   try {
     const { id } = req.params;
-    const { userId } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({ error: 'userId는 필수입니다.' });
-    }
+    const userId = req.user.id; // JWT에서 가져온 사용자 ID
 
     await connection.beginTransaction();
 
@@ -285,11 +282,8 @@ async function failChallenge(req, res, next) {
 
   try {
     const { id } = req.params;
-    const { userId, reason = 'timeout' } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({ error: 'userId는 필수입니다.' });
-    }
+    const { reason = 'timeout' } = req.body;
+    const userId = req.user.id; // JWT에서 가져온 사용자 ID
 
     await connection.beginTransaction();
 

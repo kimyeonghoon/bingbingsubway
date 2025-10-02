@@ -6,6 +6,8 @@ services:
     image: mysql:8.0
     container_name: bingbing_mysql
     restart: always
+    env_file:
+      - .env.production
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -36,6 +38,8 @@ services:
       dockerfile: Dockerfile
     container_name: bingbing_backend
     restart: always
+    env_file:
+      - .env.production
     environment:
       NODE_ENV: production
       DATABASE_HOST: mysql
@@ -67,6 +71,8 @@ services:
         VITE_API_URL: ${VITE_API_URL}
     container_name: bingbing_frontend
     restart: always
+    env_file:
+      - .env.production
     ports:
       - "${FRONTEND_PORT:-5080}:80"
     depends_on:
