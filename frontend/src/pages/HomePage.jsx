@@ -106,12 +106,22 @@ export default function HomePage({ userId }) {
 
   // 룰렛에서 역 선택
   const handleStationSelect = async (station) => {
+    console.log('선택된 역 객체:', station);
     setSelectedStation(station);
 
     // 서버에 선택된 역 저장하고 즉시 도전 페이지로 이동
     if (challengeId && station) {
+      const stationId = station.id;
+      console.log('역 ID:', stationId, 'challengeId:', challengeId);
+
+      if (!stationId) {
+        console.error('역 ID가 없습니다:', station);
+        alert('역 선택에 실패했습니다.');
+        return;
+      }
+
       try {
-        await challengeApi.selectStation(challengeId, station.id);
+        await challengeApi.selectStation(challengeId, stationId);
         console.log('역 선택 서버 저장 완료:', station.station_nm || station.name);
 
         // 즉시 도전 페이지로 이동 (버튼 클릭 불필요)
@@ -120,7 +130,8 @@ export default function HomePage({ userId }) {
         }, 1000); // 1초 후 이동 (사용자가 선택된 역을 확인할 시간)
       } catch (error) {
         console.error('역 선택 저장 실패:', error);
-        alert('역 선택 저장에 실패했습니다.');
+        console.error('에러 상세:', error.response?.data);
+        alert('역 선택 저장에 실패했습니다: ' + (error.response?.data?.error || error.message));
       }
     }
   };
