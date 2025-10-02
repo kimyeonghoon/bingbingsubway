@@ -37,13 +37,14 @@ function AppContent() {
 
       {/* Navigation */}
       <nav className="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-200" role="navigation" aria-label="메인 네비게이션">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4">
           <div className="flex items-center justify-between h-16">
-            <Link to="/" className="text-2xl font-bold text-gray-900 flex items-center gap-2 hover:text-blue-600 transition-colors">
-              <span className="text-3xl">🚇</span>
-              <span>빙빙 지하철</span>
+            <Link to="/" className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-1 sm:gap-2 hover:text-blue-600 transition-colors">
+              <span className="text-2xl sm:text-3xl">🚇</span>
+              <span className="hidden xs:inline">빙빙 지하철</span>
+              <span className="xs:hidden">빙빙</span>
             </Link>
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-0.5 sm:space-x-1">
               {isAuthenticated ? (
                 <>
                   <NavLink to="/" icon={<Home className="w-5 h-5" />} label="홈" />
@@ -54,9 +55,9 @@ function AppContent() {
                   <button
                     onClick={handleLogout}
                     aria-label="로그아웃"
-                    className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600
+                    className="flex items-center space-x-2 px-2 sm:px-4 py-2 rounded-lg text-gray-600
                                hover:bg-red-50 hover:text-red-600 transition-all duration-200
-                               focus:ring-2 focus:ring-red-500 focus:outline-none"
+                               focus:ring-2 focus:ring-red-500 focus:outline-none min-w-[44px] min-h-[44px]"
                   >
                     <LogOut className="w-5 h-5" />
                     <span className="hidden sm:inline text-sm font-medium">로그아웃</span>
@@ -95,9 +96,9 @@ function NavLink({ to, icon, label }) {
     <Link
       to={to}
       aria-label={label}
-      className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600
+      className="flex items-center space-x-2 px-2 sm:px-4 py-2 rounded-lg text-gray-600
                  hover:bg-blue-50 hover:text-blue-600 transition-all duration-200
-                 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                 focus:ring-2 focus:ring-blue-500 focus:outline-none min-w-[44px] min-h-[44px]"
     >
       {icon}
       <span className="hidden sm:inline text-sm font-medium">{label}</span>

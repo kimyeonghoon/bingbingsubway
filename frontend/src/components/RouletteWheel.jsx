@@ -40,17 +40,17 @@ const RouletteWheel = ({ stations, onStationSelect, isSpinning, onSpinComplete, 
   ];
 
   return (
-    <div className="flex flex-col items-center justify-center p-8">
-      <div className="relative w-96 h-96 mx-auto" role="region" aria-label="룰렛 휠">
+    <div className="flex flex-col items-center justify-center p-4 sm:p-8">
+      <div className="relative w-full max-w-[320px] sm:max-w-md aspect-square mx-auto" role="region" aria-label="룰렛 휠">
         {/* 포인터 (빨간 삼각형) */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 z-20 pointer-events-none" aria-hidden="true">
-          <div className="w-0 h-0 border-l-[20px] border-r-[20px] border-t-[40px] border-l-transparent border-r-transparent border-t-red-600"></div>
+          <div className="w-0 h-0 border-l-[15px] sm:border-l-[20px] border-r-[15px] sm:border-r-[20px] border-t-[30px] sm:border-t-[40px] border-l-transparent border-r-transparent border-t-red-600"></div>
         </div>
 
         {/* 회전하는 룰렛 */}
         <svg
-          width="384"
-          height="384"
+          width="100%"
+          height="100%"
           viewBox="0 0 384 384"
           className="drop-shadow-2xl"
           style={{
@@ -114,8 +114,8 @@ const RouletteWheel = ({ stations, onStationSelect, isSpinning, onSpinComplete, 
             disabled={isSpinning || !stations || stations.length === 0}
             aria-label={isSpinning ? '룰렛 회전 중' : '룰렛 돌리기'}
             aria-live="polite"
-            className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-600 to-blue-800
-                       border-4 border-white shadow-xl flex items-center justify-center
+            className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-blue-600 to-blue-800
+                       border-3 sm:border-4 border-white shadow-xl flex items-center justify-center
                        transition-all duration-200 transform
                        hover:scale-110 hover:shadow-2xl active:scale-95
                        disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
@@ -127,7 +127,7 @@ const RouletteWheel = ({ stations, onStationSelect, isSpinning, onSpinComplete, 
             <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-full"></div>
 
             {/* 중앙 텍스트 */}
-            <span className="relative z-10 text-white font-bold text-2xl group-hover:animate-pulse">
+            <span className="relative z-10 text-white font-bold text-xl sm:text-2xl group-hover:animate-pulse">
               {isSpinning ? '🌀' : '빙빙'}
             </span>
 
