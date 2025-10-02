@@ -15,6 +15,8 @@ router.post('/auth/login', authController.login);
 router.post('/auth/refresh', authController.refresh);
 router.post('/auth/logout', authController.logout);
 router.get('/auth/me', authenticateToken, authController.me);
+router.post('/auth/forgot-password', authController.forgotPassword);
+router.post('/auth/reset-password', authController.resetPassword);
 
 // 역 정보 관련 라우트
 router.get('/lines', stationController.getLines);

@@ -112,8 +112,7 @@ class EmailService {
   }
 
   // 비밀번호 재설정 이메일
-  async sendPasswordResetEmail(to, username, resetToken) {
-    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
+  async sendPasswordResetEmail(to, username, resetUrl) {
     const subject = '🔐 빙빙 지하철 비밀번호 재설정';
     const html = `
       <!DOCTYPE html>

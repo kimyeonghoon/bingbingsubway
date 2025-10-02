@@ -1,6 +1,8 @@
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const { pool: db } = require('../config/database');
 const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require('../utils/jwt');
+const emailService = require('../services/emailService');
 
 /**
  * 회원가입
@@ -275,10 +277,132 @@ async function me(req, res) {
   }
 }
 
+/**
+ * 비밀번호 재설정 요청
+ * POST /api/auth/forgot-password
+ */
+async function forgotPassword(req, res) {
+  try {
+    const { email } = req.body;
+
+    // 입력 검증
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // 이메일 형식 검증
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+
+    // 사용자 조회
+    const [users] = await db.query(
+      'SELECT id, email, username FROM users WHERE email = ?',
+      [email]
+    );
+
+    // 보안상 이유로 사용자가 존재하지 않아도 성공 응답 반환
+    if (users.length === 0) {
+      return res.status(200).json({ message: '비밀번호 재설정 이메일이 발송되었습니다' });
+    }
+
+    const user = users[0];
+
+    // 재설정 토큰 생성 (32바이트 랜덤 문자열)
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1시간 후
+
+    // 기존 재설정 토큰 삭제
+    await db.query('DELETE FROM password_resets WHERE user_id = ?', [user.id]);
+
+    // 새 재설정 토큰 저장
+    await db.query(
+      'INSERT INTO password_resets (user_id, token, expires_at) VALUES (?, ?, ?)',
+      [user.id, resetToken, expiresAt]
+    );
+
+    // 이메일 발송
+    try {
+      const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+      await emailService.sendPasswordResetEmail(user.email, user.username, resetUrl);
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+      // 이메일 발송 실패해도 사용자에게는 성공 응답 반환 (보안)
+    }
+
+    res.status(200).json({ message: '비밀번호 재설정 이메일이 발송되었습니다' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+/**
+ * 비밀번호 재설정
+ * POST /api/auth/reset-password
+ */
+async function resetPassword(req, res) {
+  try {
+    const { token, password } = req.body;
+
+    // 입력 검증
+    if (!token || !password) {
+      return res.status(400).json({ error: 'Token and password are required' });
+    }
+
+    // 비밀번호 길이 검증
+    if (password.length < 8) {
+      return res.status(400).json({ error: '비밀번호는 최소 8자 이상이어야 합니다' });
+    }
+
+    // 토큰 조회
+    const [tokens] = await db.query(
+      'SELECT user_id, expires_at FROM password_resets WHERE token = ?',
+      [token]
+    );
+
+    if (tokens.length === 0) {
+      return res.status(401).json({ error: '유효하지 않은 재설정 토큰입니다' });
+    }
+
+    const tokenData = tokens[0];
+
+    // 만료 시간 확인
+    if (new Date(tokenData.expires_at) < new Date()) {
+      // 만료된 토큰 삭제
+      await db.query('DELETE FROM password_resets WHERE token = ?', [token]);
+      return res.status(401).json({ error: '재설정 토큰이 만료되었습니다' });
+    }
+
+    // 비밀번호 해싱
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // 비밀번호 업데이트
+    await db.query(
+      'UPDATE users SET password_hash = ? WHERE id = ?',
+      [passwordHash, tokenData.user_id]
+    );
+
+    // 재설정 토큰 삭제
+    await db.query('DELETE FROM password_resets WHERE token = ?', [token]);
+
+    // 기존 리프레시 토큰 모두 삭제 (보안)
+    await db.query('DELETE FROM refresh_tokens WHERE user_id = ?', [tokenData.user_id]);
+
+    res.status(200).json({ message: '비밀번호가 재설정되었습니다' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
 module.exports = {
   register,
   login,
   refresh,
   logout,
   me,
+  forgotPassword,
+  resetPassword,
 };
