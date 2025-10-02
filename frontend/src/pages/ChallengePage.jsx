@@ -12,7 +12,7 @@ function ChallengePage({ userId }) {
 
   // URL 쿼리 파라미터보다 localStorage 우선 사용
   const [challengeId, setChallengeId] = useState(searchParams.get('id'));
-  const stationId = searchParams.get('station');
+  const [stationId, setStationId] = useState(searchParams.get('station'));
 
   const [challengeStations, setChallengeStations] = useState([]);
   const [challengeStartTime, setChallengeStartTime] = useState(new Date());
@@ -42,6 +42,12 @@ function ChallengePage({ userId }) {
         // challengeId 복구
         if (challenge.challengeId && !challengeId) {
           setChallengeId(challenge.challengeId);
+        }
+
+        // selectedStation (최종 선택된 역) 복구
+        if (challenge.selectedStation && !stationId) {
+          console.log('선택된 역 복구:', challenge.selectedStation.id);
+          setStationId(challenge.selectedStation.id.toString());
         }
 
         // 상세 진행 상태 복구
