@@ -46,8 +46,10 @@ function ChallengePage({ userId }) {
         setChallengeId(inProgressChallenge.id);
         setSelectedLine(inProgressChallenge.line_num);
 
-        // 시간 디버깅
+        // 시간 파싱 (서버에서 이미 한국 시간으로 변환됨)
+        // MySQL CONVERT_TZ로 +09:00 시간대 반환
         const startTime = new Date(inProgressChallenge.created_at);
+
         console.log('=== 시간 디버깅 ===');
         console.log('서버 created_at (원본):', inProgressChallenge.created_at);
         console.log('파싱된 시작 시간:', startTime);
