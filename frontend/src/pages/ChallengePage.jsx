@@ -19,6 +19,11 @@ function ChallengePage({ userId }) {
   const [verifyingStationId, setVerifyingStationId] = useState(null);
   const { location, error: geoError, getCurrentPosition } = useGeolocation();
 
+  // 개발자 모드
+  const [devMode, setDevMode] = useState(false);
+  const [devLat, setDevLat] = useState('');
+  const [devLng, setDevLng] = useState('');
+
   // 서버에서 진행 중인 도전 불러오기
   useEffect(() => {
     if (!userId) return;
@@ -101,20 +106,42 @@ function ChallengePage({ userId }) {
 
   const handleVerifyStation = async (station) => {
     setVerifyingStationId(station.id);
-    getCurrentPosition();
+
+    // 개발자 모드면 즉시 verifyVisit 호출
+    if (devMode && devLat && devLng) {
+      verifyVisit();
+    } else {
+      getCurrentPosition();
+    }
+  };
+
+  const handleDevVerify = () => {
+    if (!devLat || !devLng) {
+      alert('위도와 경도를 입력해주세요');
+      return;
+    }
+    if (!verifyingStationId) {
+      alert('먼저 "방문 인증" 버튼을 눌러주세요');
+      return;
+    }
+    verifyVisit();
   };
 
   const verifyVisit = async () => {
-    if (!location || !verifyingStationId) return;
+    // 개발자 모드인 경우 devLat/devLng 사용
+    const lat = devMode && devLat ? parseFloat(devLat) : location?.latitude;
+    const lng = devMode && devLng ? parseFloat(devLng) : location?.longitude;
+
+    if ((!lat || !lng) && !verifyingStationId) return;
 
     try {
       const result = await visitApi.createVisit(
         challengeId,
         userId,
         verifyingStationId,
-        location.latitude,
-        location.longitude,
-        location.accuracy
+        lat,
+        lng,
+        location?.accuracy || 10 // 개발자 모드는 정확도 10m
       );
 
       alert(`${result.stationName} 인증 완료! (거리: ${result.distance}m)`);
@@ -253,6 +280,80 @@ function ChallengePage({ userId }) {
               </div>
             </div>
           )}
+
+          {/* 개발자 모드 */}
+          <div className="mt-4 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-2xl shadow-lg">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-lg font-bold text-yellow-800">🛠️ 개발자 모드 (GPS 테스트)</h4>
+              <button
+                onClick={() => setDevMode(!devMode)}
+                className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+                  devMode
+                    ? 'bg-yellow-600 text-white hover:bg-yellow-700'
+                    : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                }`}
+              >
+                {devMode ? 'ON' : 'OFF'}
+              </button>
+            </div>
+
+            {devMode && (
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-semibold text-yellow-800 mb-1">위도 (Latitude)</label>
+                  <input
+                    type="number"
+                    step="0.000001"
+                    value={devLat}
+                    onChange={(e) => setDevLat(e.target.value)}
+                    placeholder="37.123456"
+                    className="w-full px-3 py-2 border-2 border-yellow-300 rounded-lg focus:border-yellow-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-yellow-800 mb-1">경도 (Longitude)</label>
+                  <input
+                    type="number"
+                    step="0.000001"
+                    value={devLng}
+                    onChange={(e) => setDevLng(e.target.value)}
+                    placeholder="127.123456"
+                    className="w-full px-3 py-2 border-2 border-yellow-300 rounded-lg focus:border-yellow-500 focus:outline-none"
+                  />
+                </div>
+                <div className="text-xs text-yellow-700 space-y-1">
+                  <p>💡 <strong>사용법:</strong></p>
+                  <ol className="list-decimal list-inside space-y-1 ml-2">
+                    <li>개발자 모드 ON</li>
+                    <li>위도/경도 입력 (역 좌표는 스테이션 카드에서 확인)</li>
+                    <li>"방문 인증" 버튼 클릭</li>
+                  </ol>
+                  <p className="mt-2">
+                    <strong>현재 GPS:</strong> {location ? `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}` : '없음'}
+                  </p>
+                </div>
+                {challengeStations.length > 0 && (
+                  <div className="text-xs text-yellow-700 bg-yellow-100 p-2 rounded">
+                    <p><strong>역 좌표:</strong></p>
+                    {challengeStations.map(s => (
+                      <p key={s.id}>
+                        {s.station_nm}: {parseFloat(s.latitude).toFixed(6)}, {parseFloat(s.longitude).toFixed(6)}
+                        <button
+                          onClick={() => {
+                            setDevLat(parseFloat(s.latitude).toFixed(6));
+                            setDevLng(parseFloat(s.longitude).toFixed(6));
+                          }}
+                          className="ml-2 px-2 py-1 bg-yellow-600 text-white text-xs rounded hover:bg-yellow-700"
+                        >
+                          복사
+                        </button>
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
