@@ -52,6 +52,8 @@ services:
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       PORT: 3000
       FRONTEND_URL: ${FRONTEND_URL}
+    ports:
+      - "3000:3000"
     depends_on:
       mysql:
         condition: service_healthy
