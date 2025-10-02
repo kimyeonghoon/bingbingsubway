@@ -20,13 +20,18 @@ async function getLeaderboard(req, res, next) {
         orderBy = 'us.unique_visited_stations DESC, us.total_score DESC';
         break;
       case 'success_rate':
-        orderBy = 'us.success_rate DESC, us.completed_challenges DESC';
+        orderBy = 'us.success_rate DESC, us.total_challenges DESC';
         break;
       default:
         orderBy = 'us.total_score DESC';
     }
 
     // 동적 ORDER BY는 prepared statement로 처리할 수 없으므로 pool.query 사용
+    // 성공률 정렬 시에는 최소 도전 횟수 필터 추가
+    const whereClause = type === 'success_rate'
+      ? 'WHERE us.total_challenges >= 10'
+      : 'WHERE us.total_challenges > 0';
+
     const query = `SELECT
         us.user_id,
         us.total_challenges,
@@ -40,7 +45,7 @@ async function getLeaderboard(req, res, next) {
          FROM user_achievements ua
          WHERE ua.user_id = us.user_id) as achievement_count
       FROM user_stats us
-      WHERE us.total_challenges > 0
+      ${whereClause}
       ORDER BY ${orderBy}
       LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`;
 
@@ -79,14 +84,19 @@ async function getWeeklyLeaderboard(req, res, next) {
     const parsedLimit = parseInt(limit);
 
     // 이번 주의 도전 기록 기준 랭킹
-    // BIGINT user_id와 prepared statement 호환성 문제로 pool.query 사용
     const [rankings] = await pool.query(
       `SELECT
         c.user_id,
         COUNT(*) as weekly_challenges,
         SUM(CASE WHEN c.status = 'completed' THEN 1 ELSE 0 END) as weekly_completed,
         COALESCE(SUM(c.score), 0) as weekly_score,
-        ROUND(SUM(CASE WHEN c.status = 'completed' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) as weekly_success_rate
+        ROUND(
+          COALESCE(
+            SUM(CASE WHEN c.status = 'completed' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(*), 0),
+            0
+          ),
+          2
+        ) as weekly_success_rate
       FROM challenges c
       WHERE c.started_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
       GROUP BY c.user_id
