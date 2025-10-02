@@ -63,7 +63,9 @@ function ChallengePage({ userId }) {
   }, [challengeId, userId]);
 
   useEffect(() => {
-    loadChallengeData();
+    if (challengeId) {
+      loadChallengeData();
+    }
   }, [challengeId, stationId]);
 
   // 진행 상태 저장
@@ -86,9 +88,16 @@ function ChallengePage({ userId }) {
   }, [location, verifyingStationId]);
 
   const loadChallengeData = async () => {
+    if (!challengeId) return;
+
     try {
       const data = await challengeApi.getChallengeStations(challengeId);
-      const selectedStationData = data.filter(s => s.id === parseInt(stationId));
+
+      // stationId가 있으면 해당 역만, 없으면 전체 역 데이터 사용
+      const selectedStationData = stationId
+        ? data.filter(s => s.id === parseInt(stationId))
+        : data;
+
       setChallengeStations(selectedStationData);
       setCompletedCount(selectedStationData.filter(s => s.is_verified).length);
 
