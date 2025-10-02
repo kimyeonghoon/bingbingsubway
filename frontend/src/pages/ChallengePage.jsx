@@ -50,10 +50,20 @@ function ChallengePage({ userId }) {
 
         // 4. 역 목록 및 방문 상태 조회
         const stations = await challengeApi.getChallengeStations(inProgressChallenge.id);
-        setChallengeStations(stations);
 
-        // 5. 완료한 역 개수 계산
-        const completed = stations.filter(s => s.is_verified).length;
+        // 5. final_station_id에 해당하는 역만 필터링 (1개만 표시)
+        const finalStation = stations.find(s => s.id === inProgressChallenge.final_station_id);
+
+        if (!finalStation) {
+          console.error('최종 선택된 역을 찾을 수 없음');
+          navigate('/');
+          return;
+        }
+
+        setChallengeStations([finalStation]); // 1개 역만 설정
+
+        // 6. 완료 여부 확인 (1개 역만 확인)
+        const completed = finalStation.is_verified ? 1 : 0;
         setCompletedCount(completed);
 
         console.log('도전 데이터 로드 완료:', {
@@ -98,13 +108,17 @@ function ChallengePage({ userId }) {
 
       alert(`${result.stationName} 인증 완료! (거리: ${result.distance}m)`);
 
-      // 서버에서 최신 도전 상태 다시 불러오기
+      // 서버에서 최신 도전 상태 다시 불러오기 (final_station만)
       const stations = await challengeApi.getChallengeStations(challengeId);
-      setChallengeStations(stations);
-      const completed = stations.filter(s => s.is_verified).length;
-      setCompletedCount(completed);
+      const finalStation = stations.find(s => s.id === finalStationId);
 
-      if (result.isAllCompleted) {
+      if (finalStation) {
+        setChallengeStations([finalStation]);
+        setCompletedCount(finalStation.is_verified ? 1 : 0);
+      }
+
+      // 1개 역 도전이므로 인증 완료 시 바로 완료
+      if (finalStation?.is_verified) {
         alert('🎉 역 방문 완료! 축하합니다!');
         navigate('/');
       }
