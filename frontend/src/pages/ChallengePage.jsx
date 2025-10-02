@@ -132,7 +132,10 @@ function ChallengePage({ userId }) {
     const lat = devMode && devLat ? parseFloat(devLat) : location?.latitude;
     const lng = devMode && devLng ? parseFloat(devLng) : location?.longitude;
 
-    if ((!lat || !lng) && !verifyingStationId) return;
+    if (!lat || !lng || !verifyingStationId) {
+      console.error('Missing required data:', { lat, lng, verifyingStationId });
+      return;
+    }
 
     try {
       const result = await visitApi.createVisit(

@@ -41,9 +41,20 @@ async function createVisit(req, res, next) {
     const challenge = challenges[0];
 
     // 2. 시간 제한 확인 (3시간)
+    console.log('[createVisit] 시간 체크 디버깅:');
+    console.log('  - challenge.started_at (DB):', challenge.started_at);
+    console.log('  - challenge.started_at type:', typeof challenge.started_at);
+
     const challengeStartedAt = new Date(challenge.started_at).getTime();
     const now = Date.now();
     const elapsedTime = now - challengeStartedAt;
+
+    console.log('  - challengeStartedAt (파싱):', challengeStartedAt);
+    console.log('  - challengeStartedAt (Date):', new Date(challengeStartedAt));
+    console.log('  - now:', now, new Date(now));
+    console.log('  - elapsedTime (ms):', elapsedTime);
+    console.log('  - elapsedTime (분):', elapsedTime / 1000 / 60);
+    console.log('  - TIME_LIMIT (분):', TIME_LIMIT / 1000 / 60);
 
     if (elapsedTime > TIME_LIMIT) {
       // 자동으로 실패 처리
