@@ -26,18 +26,13 @@ function ChallengePage({ userId }) {
   useEffect(() => {
     if (!userId) return;
 
-    // 먼저 현재 진행 중인 도전 확인
-    const savedChallenge = localStorage.getItem('bingbing_currentChallenge');
+    // 사용자별 localStorage 키 사용
+    const storageKey = `bingbing_currentChallenge_${userId}`;
+    const savedChallenge = localStorage.getItem(storageKey);
+
     if (savedChallenge) {
       try {
         const challenge = JSON.parse(savedChallenge);
-
-        // 다른 사용자의 도전이면 무시
-        if (challenge.userId && challenge.userId !== userId) {
-          console.log('다른 사용자의 도전 정보');
-          navigate('/');
-          return;
-        }
 
         // challengeId 복구
         if (challenge.challengeId && !challengeId) {
@@ -51,7 +46,8 @@ function ChallengePage({ userId }) {
         }
 
         // 상세 진행 상태 복구
-        const savedProgress = localStorage.getItem(`bingbing_challenge_${challenge.challengeId || challengeId}`);
+        const progressKey = `bingbing_challenge_${userId}_${challenge.challengeId || challengeId}`;
+        const savedProgress = localStorage.getItem(progressKey);
         if (savedProgress) {
           const progress = JSON.parse(savedProgress);
           setChallengeStations(progress.challengeStations || []);
@@ -76,16 +72,17 @@ function ChallengePage({ userId }) {
 
   // 진행 상태 저장
   useEffect(() => {
-    if (challengeId && challengeStations.length > 0) {
+    if (challengeId && challengeStations.length > 0 && userId) {
+      const progressKey = `bingbing_challenge_${userId}_${challengeId}`;
       const progressData = {
         challengeStations,
         completedCount,
         selectedLine,
         challengeStartTime,
       };
-      localStorage.setItem(`bingbing_challenge_${challengeId}`, JSON.stringify(progressData));
+      localStorage.setItem(progressKey, JSON.stringify(progressData));
     }
-  }, [challengeId, challengeStations, completedCount, selectedLine, challengeStartTime]);
+  }, [challengeId, challengeStations, completedCount, selectedLine, challengeStartTime, userId]);
 
   useEffect(() => {
     if (location && verifyingStationId) {

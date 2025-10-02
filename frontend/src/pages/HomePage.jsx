@@ -20,17 +20,13 @@ export default function HomePage({ userId }) {
   useEffect(() => {
     if (!userId) return;
 
-    const savedChallenge = localStorage.getItem('bingbing_currentChallenge');
+    // 사용자별 localStorage 키 사용
+    const storageKey = `bingbing_currentChallenge_${userId}`;
+    const savedChallenge = localStorage.getItem(storageKey);
+
     if (savedChallenge) {
       try {
         const challenge = JSON.parse(savedChallenge);
-
-        // 저장된 도전의 userId와 현재 로그인한 userId가 다르면 초기화
-        if (challenge.userId && challenge.userId !== userId) {
-          console.log('다른 사용자의 도전 정보 삭제');
-          localStorage.removeItem('bingbing_currentChallenge');
-          return;
-        }
 
         setSelectedLine(challenge.selectedLine);
         setChallengeId(challenge.challengeId);
@@ -50,7 +46,7 @@ export default function HomePage({ userId }) {
         }
       } catch (error) {
         console.error('Failed to restore challenge:', error);
-        localStorage.removeItem('bingbing_currentChallenge');
+        localStorage.removeItem(storageKey);
       }
     }
   }, [userId]);
@@ -58,6 +54,7 @@ export default function HomePage({ userId }) {
   // 도전 정보 저장
   useEffect(() => {
     if (step !== 'setup' && userId) {
+      const storageKey = `bingbing_currentChallenge_${userId}`;
       const challengeData = {
         userId, // 현재 로그인한 사용자 ID 저장
         step,
@@ -67,7 +64,7 @@ export default function HomePage({ userId }) {
         selectedStation,
         challengeStartTime,
       };
-      localStorage.setItem('bingbing_currentChallenge', JSON.stringify(challengeData));
+      localStorage.setItem(storageKey, JSON.stringify(challengeData));
     }
   }, [step, selectedLine, challengeId, stations, selectedStation, challengeStartTime, userId]);
 
