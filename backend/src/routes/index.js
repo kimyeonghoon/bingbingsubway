@@ -29,6 +29,7 @@ router.get('/lines/:lineName/random', stationController.getRandomStations);
 router.post('/challenges', authenticateToken, challengeController.createChallenge);
 router.get('/challenges/:userId', authenticateToken, challengeController.getChallengesByUser);
 router.get('/challenges/:id/stations', authenticateToken, challengeController.getChallengeStations);
+router.put('/challenges/:id/select-station', authenticateToken, challengeController.selectStation);
 router.post('/challenges/:id/complete', authenticateToken, challengeController.completeChallenge);
 router.post('/challenges/:id/fail', authenticateToken, challengeController.failChallenge);
 router.post('/challenges/:id/cancel', authenticateToken, challengeController.cancelChallenge);

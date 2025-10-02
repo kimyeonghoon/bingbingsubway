@@ -21,5 +21,13 @@ export const challengeApi = {
   getChallengeStations: async (challengeId) => {
     const response = await api.get(`/challenges/${challengeId}/stations`);
     return response.data;
+  },
+
+  // 룰렛에서 최종 역 선택
+  selectStation: async (challengeId, stationId) => {
+    const response = await api.put(`/challenges/${challengeId}/select-station`, {
+      stationId
+    });
+    return response.data;
   }
 };

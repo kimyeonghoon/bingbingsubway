@@ -16,13 +16,12 @@ export default function HomePage({ userId }) {
   const [challengeId, setChallengeId] = useState(null);
   const [challengeStartTime, setChallengeStartTime] = useState(null);
 
-  // 저장된 도전 정보 복구 (서버 + localStorage)
+  // 서버에서 진행 중인 도전 복구
   useEffect(() => {
     if (!userId) return;
 
     const loadChallenges = async () => {
       try {
-        // 1. 서버에서 진행 중인 도전 조회
         const challenges = await challengeApi.getChallengesByUser(userId);
         const inProgressChallenges = challenges.filter(c => c.status === 'in_progress');
 
@@ -40,80 +39,31 @@ export default function HomePage({ userId }) {
           setStations(stations);
           setChallengeStartTime(new Date(latestChallenge.created_at));
 
-          // 이미 방문 인증된 역이 있는지 확인
-          const verifiedStation = stations.find(s => s.is_verified);
-
-          if (verifiedStation) {
-            // 선택된 역이 있으면 도전 페이지로
-            setSelectedStation({
-              id: verifiedStation.id,
-              station_nm: verifiedStation.station_nm,
-              name: verifiedStation.station_nm
-            });
-            console.log('진행 중인 도전 발견, 도전 페이지로 이동');
-            navigate('/challenge');
-          } else {
-            // 아직 역을 선택하지 않았으면 룰렛 단계로
-            setStep('roulette');
-          }
-
-          return; // 서버 데이터 우선
-        }
-
-        // 2. 서버에 없으면 localStorage 확인
-        const storageKey = `bingbing_currentChallenge_${userId}`;
-        const savedChallenge = localStorage.getItem(storageKey);
-
-        if (savedChallenge) {
-          try {
-            const challenge = JSON.parse(savedChallenge);
-
-            setSelectedLine(challenge.selectedLine);
-            setChallengeId(challenge.challengeId);
-            setStations(challenge.stations || []);
-            setSelectedStation(challenge.selectedStation || null);
-            setChallengeStartTime(challenge.challengeStartTime ? new Date(challenge.challengeStartTime) : null);
-
-            // 진행 중인 도전이 있으면 도전 페이지로 이동
-            if (challenge.challengeId && challenge.selectedStation) {
-              console.log('localStorage에서 진행 중인 도전 발견, 도전 페이지로 이동');
+          // 룰렛에서 선택된 역 확인 (final_station_id)
+          if (latestChallenge.final_station_id) {
+            const finalStation = stations.find(s => s.id === latestChallenge.final_station_id);
+            if (finalStation) {
+              setSelectedStation({
+                id: finalStation.id,
+                station_nm: finalStation.station_nm,
+                name: finalStation.station_nm
+              });
+              console.log('룰렛에서 선택된 역 복구, 도전 페이지로 이동');
               navigate('/challenge');
-            } else if (challenge.selectedLine && challenge.stations && challenge.stations.length > 0) {
-              // 룰렛 단계
-              setStep('roulette');
-            } else {
-              setStep('setup');
+              return;
             }
-          } catch (error) {
-            console.error('Failed to restore challenge from localStorage:', error);
-            localStorage.removeItem(storageKey);
           }
+
+          // 아직 역을 선택하지 않았으면 룰렛 단계로
+          setStep('roulette');
         }
       } catch (error) {
         console.error('Failed to load challenges from server:', error);
-        // 서버 에러 시 localStorage만 사용
       }
     };
 
     loadChallenges();
   }, [userId, navigate]);
-
-  // 도전 정보 저장
-  useEffect(() => {
-    if (step !== 'setup' && userId) {
-      const storageKey = `bingbing_currentChallenge_${userId}`;
-      const challengeData = {
-        userId, // 현재 로그인한 사용자 ID 저장
-        step,
-        selectedLine,
-        challengeId,
-        stations,
-        selectedStation,
-        challengeStartTime,
-      };
-      localStorage.setItem(storageKey, JSON.stringify(challengeData));
-    }
-  }, [step, selectedLine, challengeId, stations, selectedStation, challengeStartTime, userId]);
 
   // 노선 목록 로드
   useEffect(() => {
@@ -155,8 +105,18 @@ export default function HomePage({ userId }) {
   };
 
   // 룰렛에서 역 선택
-  const handleStationSelect = (station) => {
+  const handleStationSelect = async (station) => {
     setSelectedStation(station);
+
+    // 서버에 선택된 역 저장
+    if (challengeId && station) {
+      try {
+        await challengeApi.selectStation(challengeId, station.id);
+        console.log('역 선택 서버 저장 완료:', station.station_nm || station.name);
+      } catch (error) {
+        console.error('역 선택 저장 실패:', error);
+      }
+    }
   };
 
   // 룰렛 회전 완료

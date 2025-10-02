@@ -97,6 +97,7 @@ async function getChallengesByUser(req, res, next) {
         c.line_num,
         c.total_stations,
         c.completed_stations,
+        c.final_station_id,
         c.started_at as created_at,
         c.completed_at,
         CASE
@@ -459,11 +460,61 @@ async function cancelChallenge(req, res, next) {
   }
 }
 
+/**
+ * 룰렛에서 최종 역 선택
+ * PUT /api/challenges/:id/select-station
+ */
+async function selectStation(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { stationId } = req.body;
+    const userId = req.user.id;
+
+    if (!stationId) {
+      return res.status(400).json({ error: 'stationId is required' });
+    }
+
+    // 도전 조회 및 권한 확인
+    const [challenges] = await pool.execute(
+      'SELECT * FROM challenges WHERE id = ? AND user_id = ?',
+      [id, userId]
+    );
+
+    if (challenges.length === 0) {
+      return res.status(404).json({ error: '도전을 찾을 수 없습니다.' });
+    }
+
+    const challenge = challenges[0];
+
+    if (challenge.status !== 'in_progress') {
+      return res.status(400).json({ error: '진행 중인 도전만 역을 선택할 수 있습니다.' });
+    }
+
+    // final_station_id 업데이트
+    await pool.execute(
+      'UPDATE challenges SET final_station_id = ? WHERE id = ?',
+      [stationId, id]
+    );
+
+    console.log('[selectStation] 도전', id, '의 최종 역 선택:', stationId);
+
+    res.json({
+      success: true,
+      challengeId: id,
+      stationId
+    });
+  } catch (error) {
+    console.error('[selectStation] 에러:', error);
+    next(error);
+  }
+}
+
 module.exports = {
   createChallenge,
   getChallengesByUser,
   getChallengeStations,
   completeChallenge,
   failChallenge,
-  cancelChallenge
+  cancelChallenge,
+  selectStation
 };
