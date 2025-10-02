@@ -31,6 +31,7 @@ router.get('/challenges/:userId', authenticateToken, challengeController.getChal
 router.get('/challenges/:id/stations', authenticateToken, challengeController.getChallengeStations);
 router.post('/challenges/:id/complete', authenticateToken, challengeController.completeChallenge);
 router.post('/challenges/:id/fail', authenticateToken, challengeController.failChallenge);
+router.post('/challenges/:id/cancel', authenticateToken, challengeController.cancelChallenge);
 
 // 방문 인증 라우트 (인증 필수)
 router.post('/visits', authenticateToken, visitController.createVisit);

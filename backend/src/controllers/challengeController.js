@@ -378,10 +378,86 @@ async function failChallenge(req, res, next) {
   }
 }
 
+/**
+ * 도전 취소 처리
+ * POST /api/challenges/:id/cancel
+ */
+async function cancelChallenge(req, res, next) {
+  const connection = await pool.getConnection();
+
+  try {
+    const { id } = req.params;
+    const userId = req.user.id; // JWT에서 가져온 사용자 ID
+
+    await connection.beginTransaction();
+
+    // 1. 도전 정보 조회
+    const [challenges] = await connection.execute(
+      'SELECT * FROM challenges WHERE id = ? AND user_id = ?',
+      [id, userId]
+    );
+
+    if (challenges.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ error: '도전을 찾을 수 없습니다.' });
+    }
+
+    const challenge = challenges[0];
+
+    if (challenge.status !== 'in_progress') {
+      await connection.rollback();
+      return res.status(400).json({ error: '진행 중인 도전만 취소할 수 있습니다.' });
+    }
+
+    // 2. 도전 시간 계산
+    const startTime = new Date(challenge.started_at);
+    const endTime = new Date();
+    const timeTaken = Math.floor((endTime - startTime) / 1000);
+
+    // 3. 방문한 역 개수 확인 (참고용)
+    const [visitCounts] = await connection.execute(
+      'SELECT COUNT(*) as verified_count FROM visits WHERE challenge_id = ? AND is_verified = TRUE',
+      [id]
+    );
+
+    const verifiedCount = visitCounts[0].verified_count;
+
+    // 4. 도전 상태 업데이트 (cancelled)
+    await connection.execute(
+      `UPDATE challenges SET
+        status = 'cancelled',
+        completed_at = NOW(),
+        time_taken = ?,
+        score = 0,
+        completed_stations = ?
+      WHERE id = ?`,
+      [timeTaken, verifiedCount, id]
+    );
+
+    await connection.commit();
+
+    res.json({
+      success: true,
+      challengeId: id,
+      status: 'cancelled',
+      timeTaken,
+      verifiedStations: verifiedCount,
+      totalStations: challenge.total_stations
+    });
+
+  } catch (error) {
+    await connection.rollback();
+    next(error);
+  } finally {
+    connection.release();
+  }
+}
+
 module.exports = {
   createChallenge,
   getChallengesByUser,
   getChallengeStations,
   completeChallenge,
-  failChallenge
+  failChallenge,
+  cancelChallenge
 };
