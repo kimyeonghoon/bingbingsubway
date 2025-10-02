@@ -179,10 +179,9 @@ export const challengeApi = {
 
 // 방문 인증 API
 export const visitApi = {
-  createVisit: async (challengeId, userId, stationId, latitude, longitude, accuracy) => {
+  createVisit: async (challengeId, stationId, latitude, longitude, accuracy) => {
     const response = await api.post('/visits', {
       challengeId,
-      userId,
       stationId,
       latitude,
       longitude,

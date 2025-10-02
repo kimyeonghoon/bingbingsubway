@@ -11,11 +11,12 @@ async function createVisit(req, res, next) {
   const connection = await pool.getConnection();
 
   try {
-    const { challengeId, userId, stationId, latitude, longitude, accuracy } = req.body;
+    const { challengeId, stationId, latitude, longitude, accuracy } = req.body;
+    const userId = req.user.id; // JWT에서 가져온 사용자 ID
 
-    if (!challengeId || !userId || !stationId || latitude === undefined || longitude === undefined) {
+    if (!challengeId || !stationId || latitude === undefined || longitude === undefined) {
       return res.status(400).json({
-        error: 'challengeId, userId, stationId, latitude, longitude는 필수입니다.'
+        error: 'challengeId, stationId, latitude, longitude는 필수입니다.'
       });
     }
 

@@ -137,7 +137,6 @@ function ChallengePage({ userId }) {
     try {
       const result = await visitApi.createVisit(
         challengeId,
-        userId,
         verifyingStationId,
         lat,
         lng,
