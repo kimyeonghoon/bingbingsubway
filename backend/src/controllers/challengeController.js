@@ -126,9 +126,9 @@ async function getChallengeStations(req, res, next) {
         s.latitude,
         s.longitude,
         v.is_verified,
-        v.visited_at,
-        v.verified_latitude,
-        v.verified_longitude
+        v.arrival_time as visited_at,
+        v.visit_latitude as verified_latitude,
+        v.visit_longitude as verified_longitude
       FROM visits v
       JOIN stations s ON v.station_id = s.id
       WHERE v.challenge_id = ?
