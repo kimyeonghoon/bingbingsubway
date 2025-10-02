@@ -108,13 +108,19 @@ export default function HomePage({ userId }) {
   const handleStationSelect = async (station) => {
     setSelectedStation(station);
 
-    // 서버에 선택된 역 저장
+    // 서버에 선택된 역 저장하고 즉시 도전 페이지로 이동
     if (challengeId && station) {
       try {
         await challengeApi.selectStation(challengeId, station.id);
         console.log('역 선택 서버 저장 완료:', station.station_nm || station.name);
+
+        // 즉시 도전 페이지로 이동 (버튼 클릭 불필요)
+        setTimeout(() => {
+          navigate('/challenge');
+        }, 1000); // 1초 후 이동 (사용자가 선택된 역을 확인할 시간)
       } catch (error) {
         console.error('역 선택 저장 실패:', error);
+        alert('역 선택 저장에 실패했습니다.');
       }
     }
   };
@@ -126,7 +132,7 @@ export default function HomePage({ userId }) {
 
   // 도전 페이지로 이동
   const handleGoToChallenge = () => {
-    navigate(`/challenge?id=${challengeId}&station=${selectedStation.id}&user=${userId}`);
+    navigate('/challenge');
   };
 
   return (

@@ -7,111 +7,76 @@ import { challengeApi, visitApi } from '../services/api';
 import { useGeolocation } from '../hooks/useGeolocation';
 
 function ChallengePage({ userId }) {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // URL 쿼리 파라미터보다 localStorage 우선 사용
-  const [challengeId, setChallengeId] = useState(searchParams.get('id'));
-  const [stationId, setStationId] = useState(searchParams.get('station'));
-
+  const [challengeId, setChallengeId] = useState(null);
   const [challengeStations, setChallengeStations] = useState([]);
   const [challengeStartTime, setChallengeStartTime] = useState(new Date());
   const [completedCount, setCompletedCount] = useState(0);
   const [selectedLine, setSelectedLine] = useState('');
+  const [finalStationId, setFinalStationId] = useState(null);
 
   const [verifyingStationId, setVerifyingStationId] = useState(null);
   const { location, error: geoError, getCurrentPosition } = useGeolocation();
 
-  // 저장된 도전 정보 복구
+  // 서버에서 진행 중인 도전 불러오기
   useEffect(() => {
     if (!userId) return;
 
-    // 사용자별 localStorage 키 사용
-    const storageKey = `bingbing_currentChallenge_${userId}`;
-    const savedChallenge = localStorage.getItem(storageKey);
-
-    if (savedChallenge) {
+    const loadChallenge = async () => {
       try {
-        const challenge = JSON.parse(savedChallenge);
+        // 1. 진행 중인 도전 조회
+        const challenges = await challengeApi.getChallengesByUser(userId);
+        const inProgressChallenge = challenges.find(c => c.status === 'in_progress');
 
-        // challengeId 복구
-        if (challenge.challengeId && !challengeId) {
-          setChallengeId(challenge.challengeId);
+        if (!inProgressChallenge) {
+          console.log('진행 중인 도전이 없음, 홈으로 이동');
+          navigate('/');
+          return;
         }
 
-        // selectedStation (최종 선택된 역) 복구
-        if (challenge.selectedStation && !stationId) {
-          console.log('선택된 역 복구:', challenge.selectedStation.id);
-          setStationId(challenge.selectedStation.id.toString());
+        // 2. final_station_id가 없으면 홈으로 (룰렛 선택 안 됨)
+        if (!inProgressChallenge.final_station_id) {
+          console.log('역이 선택되지 않음, 홈으로 이동');
+          navigate('/');
+          return;
         }
 
-        // 상세 진행 상태 복구
-        const progressKey = `bingbing_challenge_${userId}_${challenge.challengeId || challengeId}`;
-        const savedProgress = localStorage.getItem(progressKey);
-        if (savedProgress) {
-          const progress = JSON.parse(savedProgress);
-          setChallengeStations(progress.challengeStations || []);
-          setCompletedCount(progress.completedCount || 0);
-          setSelectedLine(progress.selectedLine || challenge.selectedLine || '');
-          setChallengeStartTime(progress.challengeStartTime ? new Date(progress.challengeStartTime) : new Date());
-        }
+        // 3. 도전 데이터 설정
+        setChallengeId(inProgressChallenge.id);
+        setSelectedLine(inProgressChallenge.line_num);
+        setChallengeStartTime(new Date(inProgressChallenge.created_at));
+        setFinalStationId(inProgressChallenge.final_station_id);
+
+        // 4. 역 목록 및 방문 상태 조회
+        const stations = await challengeApi.getChallengeStations(inProgressChallenge.id);
+        setChallengeStations(stations);
+
+        // 5. 완료한 역 개수 계산
+        const completed = stations.filter(s => s.is_verified).length;
+        setCompletedCount(completed);
+
+        console.log('도전 데이터 로드 완료:', {
+          challengeId: inProgressChallenge.id,
+          line: inProgressChallenge.line_num,
+          stations: stations.length,
+          completed
+        });
+
       } catch (error) {
-        console.error('Failed to restore progress:', error);
+        console.error('도전 데이터 로드 실패:', error);
+        navigate('/');
       }
-    } else if (!challengeId) {
-      // 저장된 도전이 없고 URL에도 challengeId가 없으면 홈으로
-      navigate('/');
-    }
-  }, [challengeId, userId]);
+    };
 
-  useEffect(() => {
-    if (challengeId) {
-      loadChallengeData();
-    }
-  }, [challengeId, stationId]);
-
-  // 진행 상태 저장
-  useEffect(() => {
-    if (challengeId && challengeStations.length > 0 && userId) {
-      const progressKey = `bingbing_challenge_${userId}_${challengeId}`;
-      const progressData = {
-        challengeStations,
-        completedCount,
-        selectedLine,
-        challengeStartTime,
-      };
-      localStorage.setItem(progressKey, JSON.stringify(progressData));
-    }
-  }, [challengeId, challengeStations, completedCount, selectedLine, challengeStartTime, userId]);
+    loadChallenge();
+  }, [userId, navigate]);
 
   useEffect(() => {
     if (location && verifyingStationId) {
       verifyVisit();
     }
   }, [location, verifyingStationId]);
-
-  const loadChallengeData = async () => {
-    if (!challengeId) return;
-
-    try {
-      const data = await challengeApi.getChallengeStations(challengeId);
-
-      // stationId가 있으면 해당 역만, 없으면 전체 역 데이터 사용
-      const selectedStationData = stationId
-        ? data.filter(s => s.id === parseInt(stationId))
-        : data;
-
-      setChallengeStations(selectedStationData);
-      setCompletedCount(selectedStationData.filter(s => s.is_verified).length);
-
-      if (selectedStationData.length > 0) {
-        setSelectedLine(selectedStationData[0].line_num);
-      }
-    } catch (error) {
-      console.error('Failed to load challenge stations:', error);
-      alert('도전 정보를 불러오는데 실패했습니다.');
-    }
-  };
 
   const handleVerifyStation = async (station) => {
     setVerifyingStationId(station.id);
@@ -133,14 +98,15 @@ function ChallengePage({ userId }) {
 
       alert(`${result.stationName} 인증 완료! (거리: ${result.distance}m)`);
 
-      // 도전 상태 갱신
-      const data = await challengeApi.getChallengeStations(challengeId);
-      const selectedStationData = data.filter(s => s.id === parseInt(stationId));
-      setChallengeStations(selectedStationData);
-      setCompletedCount(selectedStationData.filter(s => s.is_verified).length);
+      // 서버에서 최신 도전 상태 다시 불러오기
+      const stations = await challengeApi.getChallengeStations(challengeId);
+      setChallengeStations(stations);
+      const completed = stations.filter(s => s.is_verified).length;
+      setCompletedCount(completed);
 
       if (result.isAllCompleted) {
         alert('🎉 역 방문 완료! 축하합니다!');
+        navigate('/');
       }
     } catch (error) {
       console.error('Failed to verify visit:', error);
@@ -158,15 +124,6 @@ function ChallengePage({ userId }) {
 
     try {
       await challengeApi.cancelChallenge(challengeId);
-
-      // localStorage 정리
-      if (userId) {
-        const storageKey = `bingbing_currentChallenge_${userId}`;
-        const progressKey = `bingbing_challenge_${userId}_${challengeId}`;
-        localStorage.removeItem(storageKey);
-        localStorage.removeItem(progressKey);
-      }
-
       alert('도전이 취소되었습니다.');
       navigate('/');
     } catch (error) {
