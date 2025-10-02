@@ -25,33 +25,33 @@ router.get('/lines/:lineName/stations', stationController.getStationsByLine);
 router.get('/stations/:id', stationController.getStationById);
 router.get('/lines/:lineName/random', stationController.getRandomStations);
 
-// 도전 관련 라우트
-router.post('/challenges', challengeController.createChallenge);
-router.get('/challenges/:userId', challengeController.getChallengesByUser);
-router.get('/challenges/:id/stations', challengeController.getChallengeStations);
-router.post('/challenges/:id/complete', challengeController.completeChallenge);
-router.post('/challenges/:id/fail', challengeController.failChallenge);
+// 도전 관련 라우트 (인증 필수)
+router.post('/challenges', authenticateToken, challengeController.createChallenge);
+router.get('/challenges/:userId', authenticateToken, challengeController.getChallengesByUser);
+router.get('/challenges/:id/stations', authenticateToken, challengeController.getChallengeStations);
+router.post('/challenges/:id/complete', authenticateToken, challengeController.completeChallenge);
+router.post('/challenges/:id/fail', authenticateToken, challengeController.failChallenge);
 
-// 방문 인증 라우트
-router.post('/visits', visitController.createVisit);
-router.get('/visits/:userId', visitController.getVisitsByUser);
+// 방문 인증 라우트 (인증 필수)
+router.post('/visits', authenticateToken, visitController.createVisit);
+router.get('/visits/:userId', authenticateToken, visitController.getVisitsByUser);
 
-// 사용자 프로필 라우트
+// 사용자 프로필 라우트 (인증 필수)
 router.get('/users/:userId', authenticateToken, userController.getUserProfile);
 router.put('/users/:userId', authenticateToken, userController.updateUserProfile);
 router.put('/users/:userId/password', authenticateToken, userController.changePassword);
 router.delete('/users/:userId', authenticateToken, userController.deleteUser);
 
-// 사용자 통계 라우트
-router.get('/users/:userId/stats', userStatsController.getUserStats);
-router.get('/users/:userId/visited-stations', userStatsController.getVisitedStations);
-router.get('/users/:userId/line-stats', userStatsController.getLineStats);
-router.get('/users/:userId/recent-activities', userStatsController.getRecentActivities);
+// 사용자 통계 라우트 (인증 필수)
+router.get('/users/:userId/stats', authenticateToken, userStatsController.getUserStats);
+router.get('/users/:userId/visited-stations', authenticateToken, userStatsController.getVisitedStations);
+router.get('/users/:userId/line-stats', authenticateToken, userStatsController.getLineStats);
+router.get('/users/:userId/recent-activities', authenticateToken, userStatsController.getRecentActivities);
 
 // 업적 라우트
-router.get('/achievements', achievementController.getAllAchievements);
-router.get('/users/:userId/achievements', achievementController.getUserAchievements);
-router.get('/users/:userId/achievements/progress', achievementController.getAchievementProgress);
+router.get('/achievements', achievementController.getAllAchievements); // 공개 (전체 업적 목록)
+router.get('/users/:userId/achievements', authenticateToken, achievementController.getUserAchievements); // 인증 필수
+router.get('/users/:userId/achievements/progress', authenticateToken, achievementController.getAchievementProgress); // 인증 필수
 
 // 랭킹 라우트
 router.get('/leaderboard', leaderboardController.getLeaderboard);
