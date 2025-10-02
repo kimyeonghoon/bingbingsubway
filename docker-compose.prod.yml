@@ -18,6 +18,7 @@ services:
       - ./db_data:/var/lib/mysql
       - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
       - ./database/seeds.sql:/docker-entrypoint-initdb.d/02_seeds.sql
+      - ./database/achievements_seeds.sql:/docker-entrypoint-initdb.d/03_achievements_seeds.sql
       - ./mysql-utf8.cnf:/etc/mysql/conf.d/utf8.cnf:ro
     command:
       - --character-set-server=utf8mb4
