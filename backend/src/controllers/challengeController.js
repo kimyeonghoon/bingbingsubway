@@ -98,12 +98,9 @@ async function getChallengesByUser(req, res, next) {
         c.total_stations,
         c.completed_stations,
         c.final_station_id,
+        c.status,
         c.started_at as created_at,
-        c.completed_at,
-        CASE
-          WHEN c.completed_stations = c.total_stations THEN 'completed'
-          ELSE 'in_progress'
-        END as status
+        c.completed_at
       FROM challenges c
       WHERE c.user_id = ?
       ORDER BY c.started_at DESC`,
