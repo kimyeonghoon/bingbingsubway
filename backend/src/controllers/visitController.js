@@ -146,9 +146,10 @@ async function createVisit(req, res, next) {
     await connection.execute(
       `UPDATE challenges
        SET completed_stations = ?,
+           status = CASE WHEN ? = total_stations THEN 'completed' ELSE status END,
            completed_at = CASE WHEN ? = total_stations THEN NOW() ELSE completed_at END
        WHERE id = ?`,
-      [completedStations, completedStations, challengeId]
+      [completedStations, completedStations, completedStations, challengeId]
     );
 
     await connection.commit();
