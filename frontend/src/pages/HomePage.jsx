@@ -87,12 +87,33 @@ export default function HomePage({ userId }) {
       return;
     }
 
-    const randomLine = lines[Math.floor(Math.random() * lines.length)];
-    setSelectedLine(randomLine);
-
-    alert(`이번에 도전할 노선은 ${randomLine}입니다.`);
-
     try {
+      // 1. 기존 진행 중인 도전 조회
+      const challenges = await challengeApi.getChallengesByUser(userId);
+      const inProgressChallenges = challenges.filter(c => c.status === 'in_progress');
+
+      // 2. 기존 진행 중인 도전이 있으면 취소
+      if (inProgressChallenges.length > 0) {
+        const confirmCancel = window.confirm(
+          `진행 중인 도전 ${inProgressChallenges.length}개가 있습니다. 모두 취소하고 새로 시작하시겠습니까?`
+        );
+
+        if (!confirmCancel) {
+          return;
+        }
+
+        // 모든 진행 중인 도전 취소
+        for (const challenge of inProgressChallenges) {
+          await challengeApi.cancelChallenge(challenge.id);
+        }
+      }
+
+      // 3. 새 도전 생성
+      const randomLine = lines[Math.floor(Math.random() * lines.length)];
+      setSelectedLine(randomLine);
+
+      alert(`이번에 도전할 노선은 ${randomLine}입니다.`);
+
       const data = await challengeApi.createChallenge(userId, randomLine, stationCount);
       setChallengeId(data.challengeId);
       setStations(data.stations);
