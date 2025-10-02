@@ -79,6 +79,12 @@ async function createChallenge(req, res, next) {
 async function getChallengesByUser(req, res, next) {
   try {
     const { userId } = req.params;
+    const requestUserId = req.user.id; // 인증된 사용자 ID
+
+    // 권한 확인: 본인의 도전만 조회 가능
+    if (parseInt(userId) !== requestUserId) {
+      return res.status(403).json({ error: '다른 사용자의 도전을 조회할 권한이 없습니다' });
+    }
 
     const [rows] = await pool.execute(
       `SELECT
