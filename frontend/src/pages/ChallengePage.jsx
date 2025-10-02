@@ -107,11 +107,53 @@ function ChallengePage({ userId }) {
   const handleVerifyStation = async (station) => {
     setVerifyingStationId(station.id);
 
-    // 개발자 모드면 즉시 verifyVisit 호출
+    // 개발자 모드면 즉시 verifyVisit 호출 (station.id 직접 전달)
     if (devMode && devLat && devLng) {
-      verifyVisit();
+      // setState는 비동기이므로 station.id를 직접 사용
+      verifyVisitWithStationId(station.id);
     } else {
       getCurrentPosition();
+    }
+  };
+
+  const verifyVisitWithStationId = async (stationId) => {
+    const lat = devMode && devLat ? parseFloat(devLat) : location?.latitude;
+    const lng = devMode && devLng ? parseFloat(devLng) : location?.longitude;
+
+    if (!lat || !lng || !stationId) {
+      console.error('Missing required data:', { lat, lng, stationId });
+      return;
+    }
+
+    try {
+      const result = await visitApi.createVisit(
+        challengeId,
+        stationId,
+        lat,
+        lng,
+        location?.accuracy || 10
+      );
+
+      alert(`${result.stationName} 인증 완료! (거리: ${result.distance}m)`);
+
+      const stations = await challengeApi.getChallengeStations(challengeId);
+      const finalStation = stations.find(s => s.id === finalStationId);
+
+      if (finalStation) {
+        setChallengeStations([finalStation]);
+        setCompletedCount(finalStation.is_verified ? 1 : 0);
+      }
+
+      if (finalStation?.is_verified) {
+        alert('🎉 역 방문 완료! 축하합니다!');
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Failed to verify visit:', error);
+      const errorMsg = error.response?.data?.error || '방문 인증에 실패했습니다.';
+      alert(errorMsg);
+    } finally {
+      setVerifyingStationId(null);
     }
   };
 
