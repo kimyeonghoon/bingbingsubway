@@ -45,7 +45,16 @@ function ChallengePage({ userId }) {
         // 3. 도전 데이터 설정
         setChallengeId(inProgressChallenge.id);
         setSelectedLine(inProgressChallenge.line_num);
-        setChallengeStartTime(new Date(inProgressChallenge.created_at));
+
+        // 시간 디버깅
+        const startTime = new Date(inProgressChallenge.created_at);
+        console.log('=== 시간 디버깅 ===');
+        console.log('서버 created_at (원본):', inProgressChallenge.created_at);
+        console.log('파싱된 시작 시간:', startTime);
+        console.log('현재 시간:', new Date());
+        console.log('경과 시간(분):', Math.floor((Date.now() - startTime.getTime()) / 1000 / 60));
+
+        setChallengeStartTime(startTime);
         setFinalStationId(inProgressChallenge.final_station_id);
 
         // 4. 역 목록 및 방문 상태 조회
