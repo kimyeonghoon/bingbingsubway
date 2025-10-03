@@ -149,7 +149,67 @@ async function updateStatsOnChallengeFail(userId, connection) {
   }
 }
 
+/**
+ * 사용자 업적 체크 및 갱신
+ * @param {number} userId - 사용자 ID
+ * @param {Object} connection - DB connection (트랜잭션용)
+ */
+async function checkAndUpdateAchievements(userId, connection) {
+  const conn = connection || pool;
+
+  try {
+    // 1. 현재 사용자 통계 조회
+    const [userStats] = await conn.execute(
+      `SELECT
+        total_challenges,
+        completed_challenges,
+        unique_visited_stations,
+        current_streak
+      FROM user_stats
+      WHERE user_id = ?`,
+      [userId]
+    );
+
+    if (userStats.length === 0) return;
+
+    const stats = userStats[0];
+
+    // 2. 달성 가능한 업적 조회
+    const [achievements] = await conn.execute(
+      `SELECT id, condition_type, condition_value
+       FROM achievements
+       WHERE
+         (condition_type = 'total_challenges' AND condition_value <= ?) OR
+         (condition_type = 'completed_challenges' AND condition_value <= ?) OR
+         (condition_type = 'unique_visited_stations' AND condition_value <= ?) OR
+         (condition_type = 'current_streak' AND condition_value <= ?)`,
+      [
+        stats.total_challenges,
+        stats.completed_challenges,
+        stats.unique_visited_stations,
+        stats.current_streak
+      ]
+    );
+
+    // 3. 각 업적을 user_achievements에 추가 (중복 무시)
+    for (const achievement of achievements) {
+      await conn.execute(
+        `INSERT INTO user_achievements (user_id, achievement_id, achieved_at)
+         VALUES (?, ?, NOW())
+         ON DUPLICATE KEY UPDATE achievement_id = achievement_id`,
+        [userId, achievement.id]
+      );
+    }
+
+    console.log(`[statsHelper] 사용자 ${userId}의 업적 ${achievements.length}개 체크 완료`);
+  } catch (error) {
+    console.error('[statsHelper] 업적 체크 실패:', error);
+    throw error;
+  }
+}
+
 module.exports = {
   updateStatsOnChallengeComplete,
-  updateStatsOnChallengeFail
+  updateStatsOnChallengeFail,
+  checkAndUpdateAchievements
 };

@@ -250,8 +250,8 @@ async function completeChallenge(req, res, next) {
     }
 
     // 8. 업적 체크
-    const { checkAndUpdateAchievements } = require('./achievementController');
-    const newAchievements = await checkAndUpdateAchievements(userId);
+    const { checkAndUpdateAchievements } = require('../utils/statsHelper');
+    await checkAndUpdateAchievements(userId, connection);
 
     await connection.commit();
 
@@ -260,13 +260,7 @@ async function completeChallenge(req, res, next) {
       challengeId: id,
       status: 'completed',
       timeTaken,
-      score,
-      newAchievements: newAchievements.map(a => ({
-        id: a.id,
-        name: a.name,
-        icon: a.icon,
-        points: a.points
-      }))
+      score
     });
 
   } catch (error) {
