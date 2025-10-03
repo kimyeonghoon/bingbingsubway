@@ -81,20 +81,14 @@ export default function StatsPage({ userId }) {
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
-    // UTC 시간을 받아서 KST로 변환
+    // UTC 시간 그대로 표시
     const date = new Date(dateString);
-    // toLocaleString으로 한국 시간대 명시
-    const formatted = date.toLocaleString('ko-KR', {
-      timeZone: 'Asia/Seoul',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    });
-    // "2025. 10. 04. 00:57" -> "2025-10-04 00:57"
-    return formatted.replace(/\. /g, '-').replace(/\.$/, ' ').trim().replace(/-(\d{2}:\d{2})/, ' $1');
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const hours = String(date.getUTCHours()).padStart(2, '0');
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
   };
 
   return (
