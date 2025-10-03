@@ -271,16 +271,22 @@ function getConditionText(achievement) {
   const { condition_type, condition_value } = achievement;
 
   switch (condition_type) {
+    case 'total_challenges':
     case 'challenge_count':
       return `도전 ${condition_value}회`;
+    case 'completed_challenges':
     case 'success_count':
       return `성공 ${condition_value}회`;
+    case 'current_streak':
     case 'streak':
       return `연속 ${condition_value}회 성공`;
+    case 'unique_visited_stations':
     case 'station_count':
       return `${condition_value}개 역 방문`;
     case 'time':
       return `${Math.floor(condition_value / 60)}분 이내 완료`;
+    case 'success_rate':
+      return `성공률 ${condition_value}% 이상`;
     case 'line_complete':
       return condition_value === 0 ? '모든 노선 완료' : '특정 노선 완료';
     default:
