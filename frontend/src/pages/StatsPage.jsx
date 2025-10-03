@@ -25,9 +25,11 @@ export default function StatsPage({ userId }) {
         statsApi.getLineStats(userId)
       ]);
 
+      console.log('Stats loaded:', { statsData, visitedData, lineData });
+
       setStats(statsData);
-      setVisitedStations(visitedData);
-      setLineStats(lineData);
+      setVisitedStations(visitedData.stations || visitedData || []);
+      setLineStats(lineData || []);
     } catch (error) {
       console.error('통계 로드 실패:', error);
       setError('통계를 불러오는데 실패했습니다.');
