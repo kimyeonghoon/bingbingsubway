@@ -84,7 +84,7 @@ export default function StatsPage({ userId }) {
     // UTC 시간을 받아서 KST로 변환
     const date = new Date(dateString);
     // toLocaleString으로 한국 시간대 명시
-    return date.toLocaleString('ko-KR', {
+    const formatted = date.toLocaleString('ko-KR', {
       timeZone: 'Asia/Seoul',
       year: 'numeric',
       month: '2-digit',
@@ -92,7 +92,9 @@ export default function StatsPage({ userId }) {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false
-    }).replace(/\. /g, '-').replace('.', '');
+    });
+    // "2025. 10. 04. 00:57" -> "2025-10-04 00:57"
+    return formatted.replace(/\. /g, '-').replace(/\.$/, ' ').trim().replace(/-(\d{2}:\d{2})/, ' $1');
   };
 
   return (
