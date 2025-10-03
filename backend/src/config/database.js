@@ -8,6 +8,7 @@ const pool = mysql.createPool({
   database: process.env.DATABASE_NAME,
   port: process.env.DATABASE_PORT || 3306,
   charset: 'utf8mb4',
+  timezone: '+00:00', // UTC 시간대로 통일
   connectAttributes: {
     program_name: 'bingbing_subway_backend'
   },
