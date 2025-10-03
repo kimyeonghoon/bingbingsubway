@@ -247,11 +247,21 @@ export default function HomePage({ userId }) {
               룰렛을 돌려 역을 확인하세요!
             </h2>
             <button
-              onClick={() => {
+              onClick={async () => {
                 if (window.confirm('룰렛을 초기화하고 처음부터 다시 시작하시겠습니까?')) {
-                  setStep('setup');
-                  setSelectedStation(null);
-                  setIsSpinning(false);
+                  try {
+                    // challenge 취소
+                    if (challengeId) {
+                      await challengeApi.cancelChallenge(challengeId);
+                    }
+                    setStep('setup');
+                    setSelectedStation(null);
+                    setIsSpinning(false);
+                    setChallengeId(null);
+                  } catch (error) {
+                    console.error('Challenge 취소 실패:', error);
+                    alert('초기화에 실패했습니다.');
+                  }
                 }
               }}
               className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-semibold text-sm
