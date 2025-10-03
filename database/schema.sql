@@ -1,7 +1,7 @@
--- 빙빙 지하철 데이터베이스 스키마 백업
+-- 빙빙 지하철 데이터베이스 스키마
 -- MySQL 8.0
--- 생성일: 2025-10-02
--- 설명: Docker 환경에서 검증된 실제 스키마
+-- 최종 업데이트: 2025-10-03
+-- 설명: 실서버 운영 중인 스키마 (검증 완료)
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
