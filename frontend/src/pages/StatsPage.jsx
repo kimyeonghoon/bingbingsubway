@@ -199,14 +199,14 @@ export default function StatsPage({ userId }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
               {visitedStations.map((station) => (
                 <div
-                  key={station.id}
+                  key={station.station_id || station.id}
                   className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200"
                 >
                   <p className="font-bold text-purple-700 text-base mb-1">{station.station_nm}</p>
                   <p className="text-xs text-gray-600 mb-2">{station.line_num}</p>
-                  {station.first_visited_at && (
+                  {station.first_visit_at && (
                     <p className="text-xs text-gray-500">
-                      🕐 {formatDate(station.first_visited_at)}
+                      🕐 {formatDate(station.first_visit_at)}
                     </p>
                   )}
                   {station.visit_count > 1 && (

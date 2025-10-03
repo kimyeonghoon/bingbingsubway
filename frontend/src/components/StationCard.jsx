@@ -1,21 +1,27 @@
 const StationCard = ({ station, isVerified, onVerify, isVerifying, userLocation }) => {
   const handleKakaoMapRoute = () => {
-    if (!userLocation || !station.latitude || !station.longitude) {
-      alert('위치 정보를 가져올 수 없습니다.');
+    // 역 좌표 확인
+    if (!station.latitude || !station.longitude) {
+      alert('역의 위치 정보가 없습니다.');
       return;
     }
 
-    const sp = `${userLocation.latitude},${userLocation.longitude}`;
-    const ep = `${station.latitude},${station.longitude}`;
-    const url = `kakaomap://route?sp=${sp}&ep=${ep}&by=publictransit`;
+    // 모바일 환경 감지
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-    // 카카오맵 앱 실행
-    window.location.href = url;
+    if (isMobile) {
+      // 모바일: 카카오맵 앱/웹에서 도착지만 설정 (출발지는 사용자가 앱에서 설정)
+      const ep = `${station.latitude},${station.longitude}`;
+      const url = `kakaomap://look?p=${ep}`;
+      window.location.href = url;
 
-    // 앱이 설치되어 있지 않은 경우 웹으로 이동
-    setTimeout(() => {
-      window.open(`http://m.map.kakao.com/scheme/route?sp=${sp}&ep=${ep}&by=publictransit`, '_blank');
-    }, 1500);
+      setTimeout(() => {
+        window.open(`https://map.kakao.com/link/to/${station.station_nm},${station.latitude},${station.longitude}`, '_blank');
+      }, 1500);
+    } else {
+      // 데스크톱: 카카오맵 웹에서 목적지 표시
+      window.open(`https://map.kakao.com/link/to/${station.station_nm},${station.latitude},${station.longitude}`, '_blank');
+    }
   };
 
   return (

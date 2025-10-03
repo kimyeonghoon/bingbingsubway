@@ -19,8 +19,9 @@ const pool = mysql.createPool({
 
 // 풀에서 연결을 가져올 때 UTF-8 설정 적용
 pool.on('connection', (connection) => {
-  connection.query("SET NAMES 'utf8mb4'");
+  connection.query("SET NAMES utf8mb4");
   connection.query("SET CHARACTER SET utf8mb4");
+  connection.query("SET character_set_results = utf8mb4");
 });
 
 // 연결 테스트 함수
