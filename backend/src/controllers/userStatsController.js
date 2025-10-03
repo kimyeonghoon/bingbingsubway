@@ -8,6 +8,12 @@ async function getUserStats(req, res, next) {
   try {
     const { userId } = req.params;
 
+    // 사용자 정보 조회
+    const [userRows] = await pool.execute(
+      `SELECT id, username, email FROM users WHERE id = ?`,
+      [userId]
+    );
+
     // user_stats 조회 (없으면 기본값 반환)
     const [statsRows] = await pool.execute(
       `SELECT * FROM user_stats WHERE user_id = ?`,
@@ -19,6 +25,8 @@ async function getUserStats(req, res, next) {
       // 통계가 없으면 기본값 생성
       stats = {
         user_id: userId,
+        username: userRows[0]?.username || `사용자 ${userId}`,
+        email: userRows[0]?.email || null,
         total_challenges: 0,
         completed_challenges: 0,
         failed_challenges: 0,
@@ -37,6 +45,8 @@ async function getUserStats(req, res, next) {
       // 숫자 타입 변환
       stats = {
         ...statsRows[0],
+        username: userRows[0]?.username || `사용자 ${userId}`,
+        email: userRows[0]?.email || null,
         total_challenges: parseInt(statsRows[0].total_challenges) || 0,
         completed_challenges: parseInt(statsRows[0].completed_challenges) || 0,
         failed_challenges: parseInt(statsRows[0].failed_challenges) || 0,

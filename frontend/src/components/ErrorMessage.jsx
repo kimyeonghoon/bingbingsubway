@@ -99,7 +99,7 @@ export const ERROR_MESSAGES = {
   },
   TOO_FAR: {
     title: '거리가 너무 멉니다',
-    message: '목표 역에서 100m 이내에 있어야 합니다.'
+    message: '목표 역에서 200m 이내에 있어야 합니다.'
   },
   ALREADY_VISITED: {
     title: '이미 방문한 역',

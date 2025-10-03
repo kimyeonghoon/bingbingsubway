@@ -79,6 +79,17 @@ export default function StatsPage({ userId }) {
     return `${secs}초`;
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-8 px-4">
       <div className="container mx-auto max-w-6xl">
@@ -185,16 +196,21 @@ export default function StatsPage({ userId }) {
               <span>📍</span>
               방문한 역 ({visitedStations.length}개)
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-96 overflow-y-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
               {visitedStations.map((station) => (
                 <div
                   key={station.id}
-                  className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-3 border border-purple-200 text-center"
+                  className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200"
                 >
-                  <p className="font-bold text-purple-700 text-sm mb-1">{station.station_nm}</p>
-                  <p className="text-xs text-gray-600">{station.line_num}</p>
+                  <p className="font-bold text-purple-700 text-base mb-1">{station.station_nm}</p>
+                  <p className="text-xs text-gray-600 mb-2">{station.line_num}</p>
+                  {station.first_visited_at && (
+                    <p className="text-xs text-gray-500">
+                      🕐 {formatDate(station.first_visited_at)}
+                    </p>
+                  )}
                   {station.visit_count > 1 && (
-                    <p className="text-xs text-purple-600 mt-1">✓ {station.visit_count}회</p>
+                    <p className="text-xs text-purple-600 mt-1">✓ {station.visit_count}회 방문</p>
                   )}
                 </div>
               ))}

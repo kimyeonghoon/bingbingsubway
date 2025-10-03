@@ -73,7 +73,7 @@ export default function ProfilePage({ userId }) {
             <User className="w-12 h-12 text-white" />
           </div>
           <div>
-            <h1 className="text-4xl font-bold mb-1 text-white">사용자 {userId}</h1>
+            <h1 className="text-4xl font-bold mb-1 text-white">{stats?.username || `사용자 ${userId}`}</h1>
             <p className="text-blue-100 text-lg">
               {stats?.first_challenge_at
                 ? `${new Date(stats.first_challenge_at).toLocaleDateString()} 가입`

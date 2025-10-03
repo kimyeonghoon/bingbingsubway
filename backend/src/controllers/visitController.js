@@ -2,7 +2,7 @@ const { pool } = require('../config/database');
 const { calculateDistance } = require('../utils/distance');
 const { updateStatsOnChallengeComplete, updateStatsOnChallengeFail } = require('../utils/statsHelper');
 
-const VERIFICATION_RADIUS = 100; // 미터
+const VERIFICATION_RADIUS = 200; // 미터
 const TIME_LIMIT = 3 * 60 * 60 * 1000; // 3시간 (밀리초)
 
 /**

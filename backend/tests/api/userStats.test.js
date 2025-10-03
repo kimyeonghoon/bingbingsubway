@@ -14,7 +14,7 @@ describe('UserStats API', () => {
         user_id, total_challenges, completed_challenges, failed_challenges,
         success_rate, total_visited_stations, unique_visited_stations,
         total_play_time, current_streak, max_streak, total_score,
-        first_challenge_at, last_challenge_at
+        first_challenge_at, last_play_at
       ) VALUES (?, 10, 7, 3, 70.00, 25, 15, 7200, 3, 5, 1500, NOW(), NOW())`,
       [testUserId]
     );

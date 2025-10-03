@@ -270,6 +270,7 @@ function ChallengePage({ userId }) {
                   isVerified={station.is_verified}
                   onVerify={handleVerifyStation}
                   isVerifying={verifyingStationId === station.id}
+                  userLocation={location}
                 />
               ))}
             </div>

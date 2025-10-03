@@ -242,9 +242,26 @@ export default function HomePage({ userId }) {
 
       {step === 'roulette' && (
         <div className="max-w-2xl mx-auto bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border-2 border-purple-200">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2 text-center">
-            룰렛을 돌려 역을 확인하세요!
-          </h2>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent text-center flex-1">
+              룰렛을 돌려 역을 확인하세요!
+            </h2>
+            <button
+              onClick={() => {
+                if (window.confirm('룰렛을 초기화하고 처음부터 다시 시작하시겠습니까?')) {
+                  setStep('setup');
+                  setSelectedStation(null);
+                  setIsSpinning(false);
+                }
+              }}
+              className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-semibold text-sm
+                         transition-all duration-200 shadow-md hover:shadow-lg
+                         focus:ring-4 focus:ring-gray-300 focus:outline-none"
+              aria-label="룰렛 초기화"
+            >
+              🔄 초기화
+            </button>
+          </div>
           <p className="text-center text-gray-700 mb-6 font-semibold">
             <span className="text-blue-600">{selectedLine}</span> • 10개 역 중 1개 선택
           </p>

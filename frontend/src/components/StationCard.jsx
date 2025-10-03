@@ -1,4 +1,23 @@
-const StationCard = ({ station, isVerified, onVerify, isVerifying }) => {
+const StationCard = ({ station, isVerified, onVerify, isVerifying, userLocation }) => {
+  const handleKakaoMapRoute = () => {
+    if (!userLocation || !station.latitude || !station.longitude) {
+      alert('위치 정보를 가져올 수 없습니다.');
+      return;
+    }
+
+    const sp = `${userLocation.latitude},${userLocation.longitude}`;
+    const ep = `${station.latitude},${station.longitude}`;
+    const url = `kakaomap://route?sp=${sp}&ep=${ep}&by=publictransit`;
+
+    // 카카오맵 앱 실행
+    window.location.href = url;
+
+    // 앱이 설치되어 있지 않은 경우 웹으로 이동
+    setTimeout(() => {
+      window.open(`http://m.map.kakao.com/scheme/route?sp=${sp}&ep=${ep}&by=publictransit`, '_blank');
+    }, 1500);
+  };
+
   return (
     <div className={`p-5 rounded-xl border-2 backdrop-blur-sm transition-all duration-300 ${
       isVerified
@@ -18,7 +37,7 @@ const StationCard = ({ station, isVerified, onVerify, isVerifying }) => {
           )}
         </div>
 
-        <div className="ml-4">
+        <div className="ml-4 flex flex-col gap-2">
           {isVerified ? (
             <div className="flex items-center text-green-300">
               <svg
@@ -35,15 +54,25 @@ const StationCard = ({ station, isVerified, onVerify, isVerifying }) => {
               <span className="ml-2 font-bold">인증 완료</span>
             </div>
           ) : (
-            <button
-              onClick={() => onVerify(station)}
-              disabled={isVerifying}
-              className="px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold
-                         hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-500 disabled:to-gray-600
-                         disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
-            >
-              {isVerifying ? '인증 중...' : '방문 인증'}
-            </button>
+            <>
+              <button
+                onClick={handleKakaoMapRoute}
+                className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg font-bold
+                           hover:from-yellow-600 hover:to-yellow-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105
+                           text-sm whitespace-nowrap"
+              >
+                🚇 대중교통 검색
+              </button>
+              <button
+                onClick={() => onVerify(station)}
+                disabled={isVerifying}
+                className="px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold
+                           hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-500 disabled:to-gray-600
+                           disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+              >
+                {isVerifying ? '인증 중...' : '방문 인증'}
+              </button>
+            </>
           )}
         </div>
       </div>
