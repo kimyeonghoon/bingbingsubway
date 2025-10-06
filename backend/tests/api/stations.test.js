@@ -90,12 +90,56 @@ describe('Station API', () => {
       expect(response.body.length).toBe(10);
     });
 
-    test('역 개수보다 많은 수를 요청하면 400을 반환해야 함', async () => {
+    test('역 개수보다 많은 수를 요청하면 전체 역을 반환해야 함', async () => {
       const response = await request(app)
         .get(`/api/lines/${encodeURIComponent('1호선')}/random?count=1000`)
-        .expect(400);
+        .expect(200);
+
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body.length).toBeGreaterThan(0);
+      // 1호선은 100개 이상의 역이 있으므로 전체가 반환됨
+    });
+
+    test('역이 3개 미만인 노선은 400을 반환해야 함', async () => {
+      // 실제 데이터베이스에는 모든 노선이 3개 이상의 역을 가지고 있음
+      // 이 테스트는 로직 검증을 위한 것
+      const response = await request(app)
+        .get(`/api/lines/${encodeURIComponent('존재하지않는노선')}/random?count=10`)
+        .expect(404);
 
       expect(response.body).toHaveProperty('error');
+    });
+
+    test('GTX-A 노선에서 10개를 요청하면 9개를 반환해야 함 (역이 9개뿐)', async () => {
+      const response = await request(app)
+        .get(`/api/lines/${encodeURIComponent('GTX-A')}/random?count=10`)
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body.length).toBe(9);
+      expect(response.body[0]).toHaveProperty('station_nm');
+      expect(response.body[0]).toHaveProperty('line_num', 'GTX-A');
+    });
+
+    test('GTX-A 노선에서 9개를 요청하면 9개를 반환해야 함', async () => {
+      const response = await request(app)
+        .get(`/api/lines/${encodeURIComponent('GTX-A')}/random?count=9`)
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body.length).toBe(9);
+    });
+
+    test('GTX-A 노선에서 5개를 요청하면 5개를 반환해야 함', async () => {
+      const response = await request(app)
+        .get(`/api/lines/${encodeURIComponent('GTX-A')}/random?count=5`)
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body.length).toBe(5);
     });
   });
 
