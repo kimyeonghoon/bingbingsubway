@@ -1,509 +1,419 @@
-# 🎡 빙빙 지하철
+# 🚇 빙빙 지하철
+
+수도권 지하철역을 룰렛으로 랜덤 선택하여 방문하는 GPS 기반 챌린지 게임
+
+---
 
 ## ⚠️ 개발 원칙
+
 1. **모든 개발은 TDD 방식으로 진행**
 2. **테이블 구조 변경 시 ❗❗❗❗❗❗❗❗❗❗ 표시 필수**
 
-## 📋 개요
+---
 
-수도권 지하철역을 돌림판으로 랜덤 선택하여 방문하는 게임
+## 📋 주요 기능
 
-**주요 기능**:
-1. 특정 노선에서 10개 역 랜덤 추출
-2. 돌림판으로 최종 역 선택
-3. GPS 인증 (200m 반경, 3시간 제한)
-4. 방문 기록 저장 및 진행률 표시
+### 게임 플로우
+1. **노선 선택**: 1~9호선, 분당선, 경의중앙선 등 선택
+2. **역 개수 설정**: 3~20개 역 랜덤 추출
+3. **룰렛 애니메이션**: 최종 도전 역 선택
+4. **GPS 인증**: 200m 반경 내 방문 인증
+5. **시간 제한**: 3시간 타이머
+6. **진행률 표시**: 실시간 방문 기록
+
+### 사용자 시스템
+- **인증**: JWT 기반 (Access 15분, Refresh 7일)
+- **통계**: 도전 횟수, 성공률, 방문 역, 플레이 시간
+- **업적**: 14개 업적 (Bronze ~ Platinum)
+- **랭킹**: 전체/주간 리더보드
 
 ---
 
 ## 🗄️ 데이터베이스 (MySQL 8.0)
 
-### 테이블
-1. **users**: 사용자 정보
-2. **stations**: 역 정보 (799개, GPS 좌표 포함)
-3. **visits**: 방문 기록
-4. **challenges**: 도전 기록
+### 테이블 구조 (10개)
 
-### 호스팅
-- **PlanetScale** (무료 티어 추천)
-- Railway / Docker (대안)
+#### 1. 사용자 관련
+- **users**: 사용자 정보 (username, email, password_hash, provider)
+- **refresh_tokens**: JWT 리프레시 토큰
+- **password_resets**: 비밀번호 재설정 토큰
+
+#### 2. 게임 관련
+- **stations**: 역 정보 (799개, GPS 100%)
+- **challenges**: 도전 기록 (status: in_progress/completed/failed/cancelled)
+- **visits**: 방문 기록 (GPS 좌표, 인증 여부)
+
+#### 3. 통계/업적
+- **user_stats**: 사용자 통계 (도전 횟수, 성공률, 스트릭)
+- **user_visited_stations**: 고유 역 방문 기록
+- **achievements**: 업적 정의 (14개)
+- **user_achievements**: 사용자 업적 달성 기록
+
+### 데이터 정보
+- **역 데이터**: 799개 (GPS 좌표 100%)
+- **업적**: 14개 (challenge, streak, exploration, speed)
+- **인코딩**: utf8mb4_unicode_ci
 
 ---
 
 ## 🔧 기술 스택
 
 ### Backend
-- Node.js + Express
-- mysql2
-- cors, dotenv
+- **Runtime**: Node.js 22
+- **Framework**: Express.js 4
+- **Database**: MySQL 8.0 (mysql2)
+- **Auth**: JWT (jsonwebtoken, bcryptjs)
+- **Email**: nodemailer
+- **Testing**: Jest + Supertest
 
 ### Frontend
-- React 18 + Vite
-- TailwindCSS
-- Axios, Lucide React
+- **Framework**: React 19
+- **Build Tool**: Vite 7
+- **Routing**: React Router 7
+- **HTTP**: Axios
+- **Styling**: Tailwind CSS 4 (CSS-based config)
+- **Icons**: Lucide React
+- **Testing**: Vitest + React Testing Library
 
-### APIs
-- Geolocation API (GPS)
-- REST API (Backend 통신)
+### Infrastructure
+- **Container**: Docker Compose
+- **Environment**: dotenv
+- **CORS**: Express CORS middleware
 
 ---
 
 ## 📂 프로젝트 구조
 
 ```
-bingbing_subway/
-├── backend/
+bingbingsubway/
+├── backend/                    # Node.js + Express API
 │   ├── src/
-│   │   ├── config/database.js
-│   │   ├── controllers/
-│   │   ├── models/
+│   │   ├── config/
+│   │   │   └── database.js    # MySQL 연결 설정
+│   │   ├── controllers/       # 8개 컨트롤러
+│   │   │   ├── authController.js
+│   │   │   ├── userController.js
+│   │   │   ├── stationController.js
+│   │   │   ├── challengeController.js
+│   │   │   ├── visitController.js
+│   │   │   ├── userStatsController.js
+│   │   │   ├── achievementController.js
+│   │   │   └── leaderboardController.js
+│   │   ├── middleware/
+│   │   │   ├── auth.js        # JWT 검증
+│   │   │   └── errorHandler.js
 │   │   ├── routes/
-│   │   └── server.js
-│   ├── .env
-│   └── package.json
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── services/api.js
-│   │   ├── hooks/
+│   │   │   └── index.js       # 라우트 정의
+│   │   ├── services/
+│   │   │   └── emailService.js
 │   │   ├── utils/
-│   │   └── App.jsx
-│   ├── .env
+│   │   │   ├── distance.js    # GPS 거리 계산
+│   │   │   ├── jwt.js
+│   │   │   └── statsHelper.js
+│   │   └── server.js          # Express 앱
+│   ├── tests/                 # Jest 테스트
+│   ├── .env.example
 │   └── package.json
+│
+├── frontend/                   # React + Vite 앱
+│   ├── src/
+│   │   ├── api/               # API 레이어
+│   │   │   ├── axios.js
+│   │   │   ├── authApi.js
+│   │   │   ├── challengeApi.js
+│   │   │   ├── stationApi.js
+│   │   │   └── visitApi.js
+│   │   ├── components/        # 공통 컴포넌트
+│   │   │   ├── RouletteWheel.jsx
+│   │   │   ├── Timer.jsx
+│   │   │   ├── StationCard.jsx
+│   │   │   ├── ProgressBar.jsx
+│   │   │   ├── StatsDashboard.jsx
+│   │   │   ├── SkeletonLoader.jsx
+│   │   │   ├── ErrorMessage.jsx
+│   │   │   └── ProtectedRoute.jsx
+│   │   ├── contexts/
+│   │   │   └── AuthContext.jsx
+│   │   ├── hooks/
+│   │   │   └── useGeolocation.js
+│   │   ├── pages/             # 8개 페이지
+│   │   │   ├── HomePage.jsx
+│   │   │   ├── ChallengePage.jsx
+│   │   │   ├── StatsPage.jsx
+│   │   │   ├── AchievementsPage.jsx
+│   │   │   ├── LeaderboardPage.jsx
+│   │   │   ├── ProfilePage.jsx
+│   │   │   ├── LoginPage.jsx
+│   │   │   └── RegisterPage.jsx
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── test/                  # Vitest 테스트
+│   ├── .env.example
+│   └── package.json
+│
 ├── database/
-│   ├── schema.sql
-│   └── seeds.sql (799개 역, GPS 100%)
-└── CLAUDE.md
+│   ├── schema.sql             # 테이블 정의
+│   ├── seeds.sql              # 799개 역 데이터
+│   ├── achievements_seeds.sql # 14개 업적
+│   └── SCHEMA_SUMMARY.md
+│
+├── docker-compose.yml         # MySQL 8.0
+└── CLAUDE.md                  # 이 파일
 ```
 
 ---
 
-## 🚀 개발 단계
+## 🚀 개발 환경 설정
 
-### Phase 0: DB 설정 ✅
-- schema.sql, seeds.sql 완료
+### 1. 의존성 설치
 
-### Phase 1: Backend API ✅
-- 역 정보 조회
-- 도전 시작/방문 기록
-- GPS 인증
-
-### Phase 2: Frontend ✅
-- 노선 선택 UI
-- 돌림판 애니메이션
-- 타이머 (3시간)
-- GPS 인증 컴포넌트
-- 방문 기록 목록
-
-### Phase 3: 사용자 기록 시스템 ✅
-#### 데이터베이스 확장
-- **user_stats** 테이블: 사용자별 통계
-  - 총 도전 횟수, 성공/실패 수, 성공률
-  - 총 방문 역 수, 총 플레이 시간
-  - 연속 성공 기록, 현재 스트릭
-  - 첫 도전 날짜, 마지막 플레이 날짜
-
-- **user_visited_stations** 테이블: 고유 역 방문 기록
-  - user_id, station_id, 첫 방문 날짜, 방문 횟수
-
-- **user_achievements** 테이블: 업적 달성 기록
-  - user_id, achievement_id, 달성 날짜
-
-- **achievements** 테이블: 업적 정의
-  - 🚇 첫 발걸음, 🔥 연승왕, 🗺️ 탐험가
-  - ⏱️ 스피드러너, 🌟 노선 마스터, 💯 완벽주의자
-
-#### Backend API
-- **GET /api/users/:userId/stats**: 사용자 통계
-- **GET /api/users/:userId/visited-stations**: 방문 역 목록
-- **GET /api/users/:userId/achievements**: 달성한 업적
-- **GET /api/users/:userId/line-stats**: 노선별 통계
-- **GET /api/leaderboard**: 랭킹 (전체/주간)
-- **POST /api/challenges/:challengeId/complete**: 도전 완료 처리
-- **POST /api/challenges/:challengeId/fail**: 도전 실패 처리
-
-#### Frontend
-- **통계 대시보드**
-  - 기본 통계 카드 (도전 횟수, 성공률)
-  - 역 방문 지도 (노선별 시각화)
-  - 시간 기록 차트
-  - 노선별 통계 그래프
-
-- **업적 페이지**
-  - 달성/미달성 업적 목록
-  - 진행률 표시
-  - 업적 상세 정보
-
-- **랭킹 페이지**
-  - 전체 랭킹 (TOP 100)
-  - 주간 랭킹
-  - 내 순위 표시
-
-- **프로필 페이지**
-  - 기본 정보
-  - 대표 업적 표시
-  - 가장 많이 방문한 역 TOP 5
-  - 완료한 노선 목록
-
-#### 게임 로직 개선
-- 도전 완료/실패 시 통계 자동 업데이트
-- 업적 조건 자동 체크
-- 스트릭 계산 로직
-- 점수 시스템 (성공 +100, 빠른 완료 보너스)
-
-### Phase 4: 사용자 인증 시스템 🚧
-#### 데이터베이스 확장
-- **users 테이블 수정**
-  - email (unique, nullable - 소셜 로그인용)
-  - password_hash (nullable - 소셜 로그인용)
-  - username (unique, not null)
-  - provider (local/google/kakao/naver)
-  - provider_id (소셜 로그인 ID)
-  - email_verified (boolean)
-  - created_at, updated_at
-
-- **refresh_tokens 테이블** (JWT 리프레시 토큰)
-  - id, user_id, token, expires_at, created_at
-
-- **password_resets 테이블** (비밀번호 재설정)
-  - id, user_id, token, expires_at, created_at
-
-#### Backend API
-- **인증 API**
-  - POST /api/auth/register (이메일 회원가입)
-  - POST /api/auth/login (로그인)
-  - POST /api/auth/logout (로그아웃)
-  - POST /api/auth/refresh (토큰 갱신)
-  - POST /api/auth/forgot-password (비밀번호 재설정 요청)
-  - POST /api/auth/reset-password (비밀번호 재설정)
-  - GET /api/auth/me (현재 사용자 정보)
-
-- **소셜 로그인 API**
-  - GET /api/auth/google (Google OAuth)
-  - GET /api/auth/google/callback
-  - GET /api/auth/kakao (Kakao OAuth)
-  - GET /api/auth/kakao/callback
-  - GET /api/auth/naver (Naver OAuth)
-  - GET /api/auth/naver/callback
-
-- **사용자 관리 API**
-  - GET /api/users/:userId (프로필 조회)
-  - PUT /api/users/:userId (프로필 수정)
-  - DELETE /api/users/:userId (회원탈퇴)
-  - PUT /api/users/:userId/password (비밀번호 변경)
-
-#### 인증 구현
-- **JWT 토큰 기반 인증**
-  - Access Token (15분 유효)
-  - Refresh Token (7일 유효)
-  - HTTP-only 쿠키로 저장
-
-- **비밀번호 암호화**
-  - bcrypt 해싱 (salt rounds: 10)
-
-- **OAuth 2.0 소셜 로그인**
-  - Passport.js 사용
-  - Google, Kakao, Naver 지원
-
-- **인증 미들웨어**
-  - JWT 검증 미들웨어
-  - 권한 확인 미들웨어
-  - Rate limiting (로그인 시도 제한)
-
-#### Frontend
-- **로그인/회원가입 페이지**
-  - 이메일/비밀번호 입력
-  - 소셜 로그인 버튼 (Google, Kakao, Naver)
-  - 비밀번호 찾기 링크
-  - 회원가입 링크
-
-- **회원가입 페이지**
-  - 이메일, 비밀번호, 닉네임 입력
-  - 비밀번호 강도 체크
-  - 이메일 중복 확인
-  - 약관 동의
-
-- **프로필 설정 페이지**
-  - 닉네임 변경
-  - 비밀번호 변경
-  - 이메일 변경
-  - 회원탈퇴
-
-- **인증 상태 관리**
-  - React Context / Zustand
-  - localStorage에서 JWT 관리로 변경
-  - 자동 토큰 갱신
-  - 로그아웃 시 토큰 삭제
-
-#### 보안
-- **CSRF 방지**
-  - CSRF 토큰
-  - SameSite 쿠키 설정
-
-- **XSS 방지**
-  - 입력 데이터 sanitize
-  - Content Security Policy
-
-- **Rate Limiting**
-  - 로그인 시도 제한 (5회/10분)
-  - API 호출 제한
-
-- **이메일 인증** (선택사항)
-  - 회원가입 시 이메일 발송
-  - 인증 링크 클릭
-
-#### 마이그레이션
-- **기존 사용자 데이터 처리**
-  - localStorage userId를 실제 계정으로 마이그레이션
-  - 임시 계정 생성 후 연동 안내
-  - 데이터 병합 기능
-
-### Phase 5: Docker 배포 (예정)
-#### 배포 환경 구성
-- **Docker Compose 프로덕션 설정**
-  - 멀티 스테이지 빌드 (Frontend)
-  - 프로덕션 최적화 설정
-  - 환경변수 분리 (.env.production)
-  - 볼륨 마운트 설정
-
-- **Nginx 리버스 프록시**
-  - Frontend 정적 파일 서빙
-  - Backend API 프록시 (/api)
-  - SSL/TLS 설정
-  - Gzip 압축
-  - 캐시 헤더 설정
-
-- **데이터베이스 설정**
-  - MySQL 8.0 컨테이너
-  - 데이터 영속성 (volumes)
-  - 백업 스크립트
-  - 초기화 스크립트 자동 실행
-
-#### 프로덕션 최적화
-- **Frontend**
-  - 번들 사이즈 최적화 (< 500KB)
-  - 코드 스플리팅
-  - 이미지 최적화
-  - PWA 설정 (선택사항)
-
-- **Backend**
-  - PM2 프로세스 관리
-  - 커넥션 풀 최적화
-  - 로그 레벨 설정
-  - 에러 추적
-
-- **데이터베이스**
-  - 인덱스 최적화
-  - 쿼리 성능 튜닝
-  - 슬로우 쿼리 로그
-
-#### 모니터링 & 헬스체크
-- **헬스체크 엔드포인트**
-  - GET /health (서버 상태)
-  - GET /api/health (DB 연결 확인)
-
-- **로깅**
-  - 애플리케이션 로그
-  - 액세스 로그
-  - 에러 로그
-  - 로그 로테이션
-
-- **모니터링** (선택사항)
-  - Docker stats
-  - 리소스 사용량 추적
-  - 알림 설정
-
-#### 배포 문서
-- **서버 배포 가이드**
-  - 시스템 요구사항
-  - Docker 설치
-  - 배포 단계별 가이드
-  - 트러블슈팅
-
-- **운영 가이드**
-  - 환경변수 설정
-  - 백업 및 복구
-  - 업데이트 절차
-  - 롤백 방법
-
----
-
-## 🔑 환경변수
-
-### Backend (.env)
 ```bash
-DATABASE_URL=mysql://...
-PORT=3000
-FRONTEND_URL=http://localhost:5173
+# Backend
+cd backend
+npm install
+
+# Frontend
+cd frontend
+npm install
 ```
 
-### Frontend (.env)
+### 2. 환경변수 설정
+
+#### Backend `.env`
+```bash
+# Database
+DATABASE_HOST=localhost
+DATABASE_USER=subway_user
+DATABASE_PASSWORD=subway_pass
+DATABASE_NAME=subway_roulette
+DATABASE_PORT=3306
+
+# Server
+PORT=3000
+NODE_ENV=development
+
+# CORS
+FRONTEND_URL=http://localhost:5173
+
+# JWT
+JWT_SECRET=your-secret-key-min-32-characters-long
+JWT_ACCESS_EXPIRY=15m
+JWT_REFRESH_EXPIRY=7d
+
+# Email (선택)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+SMTP_FROM=noreply@example.com
+```
+
+#### Frontend `.env`
 ```bash
 VITE_API_URL=http://localhost:3000/api
 ```
 
----
+### 3. Docker로 MySQL 실행
 
-## 📦 설치
-
-### Backend
 ```bash
-npm install express mysql2 cors dotenv
-npm install -D nodemon
+# MySQL 컨테이너 시작 (schema.sql, seeds.sql 자동 실행)
+docker compose up -d
+
+# 데이터베이스 확인
+docker exec bingbing_subway_mysql mysql -usubway_user -psubway_pass subway_roulette -e "SELECT COUNT(*) FROM stations;"
 ```
 
-### Frontend
+### 4. 서버 실행
+
 ```bash
-npm create vite@latest . -- --template react
-npm install axios lucide-react
-npm install -D tailwindcss autoprefixer postcss
+# Backend (http://localhost:3000)
+cd backend
+npm run dev
+
+# Frontend (http://localhost:5173)
+cd frontend
+npm run dev
 ```
 
 ---
 
-## 🎯 MVP 기능
+## 📡 API 엔드포인트
 
-1. Backend API (역 정보, 방문 기록)
-2. 10개 랜덤 추출
-3. 돌림판 UI
-4. GPS 인증
-5. 방문 기록 저장
+### 인증 (Auth)
+- `POST /api/auth/register` - 회원가입
+- `POST /api/auth/login` - 로그인
+- `POST /api/auth/refresh` - 토큰 갱신
+- `POST /api/auth/logout` - 로그아웃
+- `GET /api/auth/me` - 현재 사용자 정보
+- `POST /api/auth/forgot-password` - 비밀번호 재설정 요청
+- `POST /api/auth/reset-password` - 비밀번호 재설정
+
+### 역 정보 (Stations)
+- `GET /api/lines` - 모든 노선 목록
+- `GET /api/lines/:lineName/stations` - 특정 노선의 역 목록
+- `GET /api/stations/:id` - 역 상세 정보
+- `GET /api/lines/:lineName/random?count=10` - 랜덤 역 선택
+
+### 도전 (Challenges) - 인증 필수
+- `POST /api/challenges` - 새 도전 생성
+- `GET /api/challenges/:userId` - 사용자 도전 목록
+- `GET /api/challenges/:id/stations` - 도전의 역 목록
+- `PUT /api/challenges/:id/select-station` - 최종 역 선택
+- `POST /api/challenges/:id/complete` - 도전 완료
+- `POST /api/challenges/:id/fail` - 도전 실패
+- `POST /api/challenges/:id/cancel` - 도전 취소
+
+### 방문 (Visits) - 인증 필수
+- `POST /api/visits` - 역 방문 인증 (GPS)
+- `GET /api/visits/:userId` - 사용자 방문 기록
+
+### 사용자 (Users) - 인증 필수
+- `GET /api/users/:userId` - 프로필 조회
+- `PUT /api/users/:userId` - 프로필 수정
+- `PUT /api/users/:userId/password` - 비밀번호 변경
+- `DELETE /api/users/:userId` - 회원 탈퇴
+
+### 통계 (User Stats) - 인증 필수
+- `GET /api/users/:userId/stats` - 사용자 통계
+- `GET /api/users/:userId/visited-stations` - 방문 역 목록
+- `GET /api/users/:userId/line-stats` - 노선별 통계
+- `GET /api/users/:userId/recent-activities` - 최근 활동
+
+### 업적 (Achievements)
+- `GET /api/achievements` - 전체 업적 목록 (공개)
+- `GET /api/users/:userId/achievements` - 사용자 업적 (인증 필수)
+- `GET /api/users/:userId/achievements/progress` - 업적 진행률 (인증 필수)
+
+### 랭킹 (Leaderboard)
+- `GET /api/leaderboard` - 전체 랭킹
+- `GET /api/leaderboard/weekly` - 주간 랭킹
+- `GET /api/users/:userId/rank` - 내 순위
+
+### 헬스체크
+- `GET /health` - 서버 상태 확인
 
 ---
 
-## 🔐 보안 및 환경변수 관리 (중요!)
+## 🧪 테스트
 
-### 환경변수 보호 규칙
-1. **절대 실제 값을 .env.example에 넣지 말 것**
-   - ❌ `DATABASE_URL=mysql://real_user:real_password@host/db`
-   - ✅ `DATABASE_URL=mysql://username:password@host:3306/database_name`
+### Backend (Jest)
+```bash
+cd backend
+npm test                  # 전체 테스트 실행
+npm run test:coverage     # 커버리지 포함
+```
 
-2. **.gitignore 필수 확인**
-   ```
-   .env
-   .env.local
-   .env.*.local
-   ```
+**현재 커버리지**: 33% → 목표 70%+
 
-3. **example 파일 생성 시**
-   - 실제 값이 아닌 플레이스홀더만 사용
-   - 주석으로 설명 추가
-   - 예시 값은 명확히 가짜임을 표시
+### Frontend (Vitest)
+```bash
+cd frontend
+npm test                  # 전체 테스트 실행
+```
 
-4. **개발 중**
-   - 사용자가 .env 파일에 실제 값 입력
-   - Claude는 .env 파일을 절대 읽지 않음
-   - Claude는 .env.example만 생성 (템플릿용)
-
-5. **Git 커밋 규칙**
-   - **커밋**: 작업 단위로 자동 수행 (Claude 책임)
-   - **푸시**: 사용자가 명시적으로 요청할 때만
-
-6. **커밋 전 필수 체크 (Claude 책임)**
-   - `git status` 실행하여 커밋될 파일 확인
-   - 각 파일에 민감 정보 포함 여부 검사:
-     * 비밀번호, API 키, 토큰
-     * 실제 데이터베이스 URL
-     * 이메일, 전화번호 등 개인정보
-   - 민감 정보 발견 시 커밋 중단하고 사용자에게 경고
-   - 안전 확인 후에만 커밋 진행
-
-### 기타 보안
-- CORS 설정 (Frontend URL만 허용)
-- SQL Injection 방지 (Prepared Statements)
-- HTTPS 필수 (GPS API 요구사항)
+**현재 상태**: 31개 테스트 통과 ✅
 
 ---
 
-## 📊 성능 목표
+## 🔐 보안 가이드
 
-- 초기 로딩: < 2초
-- 애니메이션: 60 FPS
-- 번들 사이즈: < 500KB
+### 환경변수 보호
+1. **.env 파일은 절대 커밋하지 않음** (`.gitignore`에 포함)
+2. **.env.example에는 플레이스홀더만 작성**
+3. **실제 값은 로컬 환경에만 존재**
+
+### JWT 토큰
+- **Access Token**: 15분 유효 (메모리/localStorage)
+- **Refresh Token**: 7일 유효 (DB 저장, HTTP-only 쿠키)
+
+### CORS 설정
+- `FRONTEND_URL` 환경변수로 허용 도메인 제한
+
+### SQL Injection 방지
+- `mysql2`의 Prepared Statements 사용
+
+### GPS 보안
+- HTTPS 필수 (Geolocation API 요구사항)
+
+---
+
+## 📝 개발 워크플로우
+
+### Git 커밋 규칙
+- **커밋**: 작업 단위로 자동 수행
+- **푸시**: 사용자가 명시적으로 요청할 때만
+- **커밋 전 체크** (자동):
+  - `git status` 실행
+  - 민감 정보 포함 여부 검사
+  - 안전 확인 후 커밋 진행
+
+### 테스트 주도 개발 (TDD)
+1. 테스트 작성
+2. 기능 구현
+3. `npm test` 실행
+4. 결과 확인 및 리팩토링
+5. 성공 시 커밋
 
 ---
 
 ## 🎨 디자인
 
-- Primary: #3B82F6
-- Success: #10B981
-- Danger: #EF4444
-- 최대 너비: 640px (모바일 중심)
+### 색상
+- **Primary**: #3B82F6 (파란색)
+- **Success**: #10B981 (녹색)
+- **Danger**: #EF4444 (빨간색)
+
+### 레이아웃
+- **최대 너비**: 640px (모바일 중심)
+- **반응형**: 모바일 우선 (320px~)
+
+### 접근성
+- WCAG 2.1 AA 준수
+- 키보드 네비게이션
+- 스크린 리더 지원
+- Skip to main content
 
 ---
 
-## 🧪 테스트 전략 (TDD 방식)
+## 📊 현재 진행 상태
 
-### Claude가 테스트 수행
-- 사용자는 기능 요청만 하면 됨
-- Claude가 구현 후 자동으로 테스트 실행
-- 테스트 결과를 사용자에게 보고
-
-### Backend 테스트
-**도구**: Jest + Supertest
-```bash
-npm install -D jest supertest
-```
-
-**테스트 예시**:
-```javascript
-// __tests__/stations.test.js
-describe('GET /api/stations/line/:lineName', () => {
-  it('1호선 역 목록을 반환해야 함', async () => {
-    const res = await request(app).get('/api/stations/line/1호선');
-    expect(res.status).toBe(200);
-    expect(res.body).toBeInstanceOf(Array);
-    expect(res.body[0]).toHaveProperty('station_nm');
-  });
-});
-```
-
-### Frontend 테스트
-**도구**: Vitest + React Testing Library
-```bash
-npm install -D vitest @testing-library/react @testing-library/jest-dom
-```
-
-**테스트 예시**:
-```javascript
-// src/components/__tests__/RouletteWheel.test.jsx
-describe('RouletteWheel', () => {
-  it('10개 역을 표시해야 함', () => {
-    const stations = [...]; // 10개 역 데이터
-    render(<RouletteWheel stations={stations} />);
-    expect(screen.getAllByRole('button')).toHaveLength(10);
-  });
-});
-```
-
-### 테스트 실행 프로세스
-1. Claude가 기능 구현
-2. 관련 테스트 작성
-3. `npm test` 실행
-4. 결과 확인 및 보고
-5. 실패 시 수정 후 재테스트
-6. 성공 시 커밋
+### Phase 3: 사용자 기록 시스템 - **완료** ✅
+- Backend API: 완료
+- Frontend UI: 완료
+- 통계/업적/랭킹: 완료
+- 테스트: Backend 33%, Frontend 31개 통과
 
 ---
 
----
-
-## 🐛 실제 테스트 후 개선 사항
+## 🐛 알려진 이슈 (실제 테스트 후)
 
 ### 우선순위 높음 🔴
-1. **GPS 범위 확대**: 100m → 200m로 조정
-2. **룰렛 초기화 기능**: 노선 확정 후 의도하지 않은 노선 방지 (도전역 리셋 아님)
-3. **통계 페이지 개선**: 방문한 역에 도전 성공 시간 표시
-4. **업적 갱신 오류**: 7회 방문 인증 시 "첫 발걸음", "도전자" 업적 미달성 문제
-5. **프로필 표시 오류**: 회원가입 시 이름 입력했으나 "사용자 N"으로 표기됨
-
-### 어제 신규 기능 추가 후 발생 🔴
-1. **대중교통 검색 버튼**: 위치 정보를 찾을 수 없다는 메시지 발생
+1. **GPS 범위**: 100m → 200m로 조정 완료
+2. **룰렛 초기화**: 노선 확정 후 의도하지 않은 노선 방지
+3. **통계 페이지**: 방문한 역에 도전 성공 시간 표시
+4. **업적 갱신**: 7회 방문 인증 시 "첫 발걸음", "도전자" 업적 미달성 문제
+5. **프로필 표시**: 회원가입 시 이름 입력했으나 "사용자 N"으로 표기됨
+6. **대중교통 검색 버튼**: 위치 정보를 찾을 수 없다는 메시지 발생
 
 ---
 
-**데이터베이스**: MySQL 8.0 (Docker)
-**상태**: Phase 3 완료, Phase 4 사용자 인증 시스템 진행 예정
+## 📚 참고 문서
+
+- **BACKEND_PLAN.md**: Backend 상세 개발 계획
+- **FRONTEND_PLAN.md**: Frontend 상세 개발 계획
+- **PHASE4_AUTH_PLAN.md**: 인증 시스템 구현 계획
+- **DEPLOYMENT.md**: 배포 가이드
+- **TODO.md**: 할 일 목록 및 진행 상황
+- **database/SCHEMA_SUMMARY.md**: DB 스키마 요약
+
+---
+
+## 📄 라이선스
+
+MIT
+
+---
+
+**개발 환경**: Node.js 22, React 19, MySQL 8.0, Docker Compose
+**상태**: Phase 3 완료, Phase 4 배포 준비
 **다음 작업**: 실제 테스트 후 개선 사항 수정
-**배포 방식**: Docker Compose (Nginx + Backend + MySQL)
-**개발 환경**: 원격 서버 (SSH)
