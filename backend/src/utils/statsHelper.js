@@ -164,7 +164,9 @@ async function checkAndUpdateAchievements(userId, connection) {
         total_challenges,
         completed_challenges,
         unique_visited_stations,
-        current_streak
+        current_streak,
+        best_time,
+        success_rate
       FROM user_stats
       WHERE user_id = ?`,
       [userId]
@@ -179,15 +181,20 @@ async function checkAndUpdateAchievements(userId, connection) {
       `SELECT id, condition_type, condition_value
        FROM achievements
        WHERE
-         (condition_type = 'total_challenges' AND condition_value <= ?) OR
-         (condition_type = 'completed_challenges' AND condition_value <= ?) OR
-         (condition_type = 'unique_visited_stations' AND condition_value <= ?) OR
-         (condition_type = 'current_streak' AND condition_value <= ?)`,
+         (condition_type = 'challenge_count' AND condition_value <= ?) OR
+         (condition_type = 'success_count' AND condition_value <= ?) OR
+         (condition_type = 'station_count' AND condition_value <= ?) OR
+         (condition_type = 'streak' AND condition_value <= ?) OR
+         (condition_type = 'time' AND condition_value >= ?) OR
+         (condition_type = 'success_rate' AND condition_value <= ? AND ? >= 10)`,
       [
         stats.total_challenges,
         stats.completed_challenges,
         stats.unique_visited_stations,
-        stats.current_streak
+        stats.current_streak,
+        stats.best_time, // best_time은 작을수록 좋으므로 >= 조건 (600초 조건이면 11초는 달성)
+        stats.success_rate,
+        stats.completed_challenges // success_rate는 10회 이상일 때만
       ]
     );
 
