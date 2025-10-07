@@ -109,6 +109,11 @@ export default function StatsPage({ userId }) {
             <div className="text-3xl mb-2">🎯</div>
             <p className="text-gray-600 text-sm font-semibold mb-1">총 도전</p>
             <p className="text-3xl font-bold text-blue-600">{stats.total_challenges}</p>
+            <div className="text-xs text-gray-500 mt-2 space-y-0.5">
+              <p>✅ 완료: {stats.completed_challenges}개</p>
+              <p>❌ 실패: {stats.failed_challenges}개</p>
+              <p>🚫 취소: {stats.cancelled_challenges}개</p>
+            </div>
           </div>
 
           {/* 성공률 */}
