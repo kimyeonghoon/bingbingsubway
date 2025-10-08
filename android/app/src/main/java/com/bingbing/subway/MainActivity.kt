@@ -23,6 +23,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var progressBar: ProgressBar
     private lateinit var locationManager: LocationManager
+    private lateinit var urlHandler: WebViewUrlHandler
 
     // 프로덕션 URL
     private val webUrl = "https://bing2.yeonghoon.kim" // 프로덕션
@@ -57,6 +58,7 @@ class MainActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progressBar)
 
         locationManager = LocationManager(this)
+        urlHandler = WebViewUrlHandler(this)
 
         setupWebView()
         setupSwipeRefresh()
@@ -98,24 +100,7 @@ class MainActivity : AppCompatActivity() {
                     view: WebView?,
                     request: WebResourceRequest?
                 ): Boolean {
-                    val url = request?.url?.toString() ?: return false
-
-                    return when {
-                        // HTTP/HTTPS는 WebView에서 처리
-                        url.startsWith("http://") || url.startsWith("https://") -> false
-
-                        // 카카오맵 스킴 처리
-                        url.startsWith("kakaomap://") -> {
-                            handleKakaoMapScheme(url)
-                            true
-                        }
-
-                        // 기타 외부 스킴 처리 (tel:, mailto:, sms: 등)
-                        else -> {
-                            handleExternalScheme(url)
-                            true
-                        }
-                    }
+                    return urlHandler.shouldOverrideUrlLoading(view, request)
                 }
 
                 override fun onPageFinished(view: WebView?, url: String?) {
@@ -245,66 +230,4 @@ class MainActivity : AppCompatActivity() {
         webView.destroy()
     }
 
-    /**
-     * 카카오맵 스킴 처리
-     */
-    private fun handleKakaoMapScheme(url: String) {
-        try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-
-            // 카카오맵 앱이 설치되어 있는지 확인
-            val resolveInfo = packageManager.resolveActivity(intent, 0)
-
-            if (resolveInfo != null) {
-                startActivity(intent)
-            } else {
-                openPlayStore()
-            }
-        } catch (e: ActivityNotFoundException) {
-            openPlayStore()
-        } catch (e: Exception) {
-            Toast.makeText(this, "카카오맵을 실행할 수 없습니다", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    /**
-     * Play Store 열기
-     */
-    private fun openPlayStore() {
-        try {
-            val intent = Intent(
-                Intent.ACTION_VIEW,
-                Uri.parse("market://details?id=net.daum.android.map")
-            ).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            startActivity(intent)
-        } catch (e: ActivityNotFoundException) {
-            val intent = Intent(
-                Intent.ACTION_VIEW,
-                Uri.parse("https://play.google.com/store/apps/details?id=net.daum.android.map")
-            ).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            startActivity(intent)
-        }
-    }
-
-    /**
-     * 기타 외부 스킴 처리
-     */
-    private fun handleExternalScheme(url: String) {
-        try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            startActivity(intent)
-        } catch (e: ActivityNotFoundException) {
-            Toast.makeText(this, "해당 기능을 실행할 수 있는 앱이 없습니다", Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            Toast.makeText(this, "링크를 실행할 수 없습니다", Toast.LENGTH_SHORT).show()
-        }
-    }
 }

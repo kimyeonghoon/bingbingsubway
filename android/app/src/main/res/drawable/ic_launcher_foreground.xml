@@ -5,19 +5,59 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- 지하철 아이콘 (간단한 원 + S 형태) -->
+    <!-- 룰렛 아이콘 -->
     <group
         android:translateX="54"
         android:translateY="54">
 
         <!-- 외곽 원 -->
         <path
+            android:fillColor="#3B82F6"
+            android:pathData="M0,0m-28,0a28,28 0,1 1,56 0a28,28 0,1 1,-56 0"/>
+
+        <!-- 내부 흰색 원 (배경) -->
+        <path
             android:fillColor="#FFFFFF"
             android:pathData="M0,0m-24,0a24,24 0,1 1,48 0a24,24 0,1 1,-48 0"/>
 
-        <!-- S 문자 (Subway) -->
+        <!-- 룰렛 섹션 1 (파란색) -->
         <path
             android:fillColor="#3B82F6"
-            android:pathData="M-8,-12 Q-12,-12 -12,-8 Q-12,-4 -8,-4 L4,-4 Q8,-4 8,0 Q8,4 4,4 L-4,4 Q-8,4 -8,8 Q-8,12 -4,12 L8,12 Q12,12 12,8 Q12,4 8,4 L-4,4 Q-8,4 -8,0 Q-8,-4 -4,-4 L4,-4 Q8,-4 8,-8 Q8,-12 4,-12 Z"/>
+            android:pathData="M0,0 L0,-24 A24,24 0,0 1,20.78 -12 Z"/>
+
+        <!-- 룰렛 섹션 2 (연한 파란색) -->
+        <path
+            android:fillColor="#60A5FA"
+            android:pathData="M0,0 L20.78,-12 A24,24 0,0 1,20.78 12 Z"/>
+
+        <!-- 룰렛 섹션 3 (파란색) -->
+        <path
+            android:fillColor="#3B82F6"
+            android:pathData="M0,0 L20.78,12 A24,24 0,0 1,0 24 Z"/>
+
+        <!-- 룰렛 섹션 4 (연한 파란색) -->
+        <path
+            android:fillColor="#60A5FA"
+            android:pathData="M0,0 L0,24 A24,24 0,0 1,-20.78 12 Z"/>
+
+        <!-- 룰렛 섹션 5 (파란색) -->
+        <path
+            android:fillColor="#3B82F6"
+            android:pathData="M0,0 L-20.78,12 A24,24 0,0 1,-20.78 -12 Z"/>
+
+        <!-- 룰렛 섹션 6 (연한 파란색) -->
+        <path
+            android:fillColor="#60A5FA"
+            android:pathData="M0,0 L-20.78,-12 A24,24 0,0 1,0 -24 Z"/>
+
+        <!-- 중앙 원 -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M0,0m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0"/>
+
+        <!-- 중앙 포인터 -->
+        <path
+            android:fillColor="#EF4444"
+            android:pathData="M0,-4 L-2,-8 L2,-8 Z"/>
     </group>
 </vector>

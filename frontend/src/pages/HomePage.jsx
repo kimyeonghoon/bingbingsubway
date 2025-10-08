@@ -144,11 +144,6 @@ export default function HomePage({ userId }) {
       try {
         await challengeApi.selectStation(challengeId, stationId);
         console.log('역 선택 서버 저장 완료:', station.station_nm || station.name);
-
-        // 즉시 도전 페이지로 이동 (버튼 클릭 불필요)
-        setTimeout(() => {
-          navigate('/challenge');
-        }, 1000); // 1초 후 이동 (사용자가 선택된 역을 확인할 시간)
       } catch (error) {
         console.error('역 선택 저장 실패:', error);
         console.error('에러 상세:', error.response?.data);
