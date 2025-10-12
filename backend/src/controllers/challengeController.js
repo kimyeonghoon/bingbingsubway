@@ -32,7 +32,8 @@ async function createChallenge(req, res, next) {
       [lineName, userId]
     );
 
-    if (stations.length < stationCount) {
+    // 0개인 경우에만 에러 (1개 이상이면 룰렛 가능)
+    if (stations.length === 0) {
       await connection.rollback();
 
       // 해당 노선의 전체 역 수 확인
@@ -50,24 +51,26 @@ async function createChallenge(req, res, next) {
         [userId, lineName]
       );
 
-      const remainingCount = stations.length;
       const completedCount = completedStations[0].completed;
       const totalCount = totalStations[0].total;
 
       return res.status(400).json({
-        error: `해당 노선에 아직 방문하지 않은 역이 ${stationCount}개 미만입니다.`,
+        error: `${lineName}의 모든 역을 완료했습니다! 🎉`,
         requested: parseInt(stationCount),
-        available: remainingCount,
+        available: 0,
         completed: completedCount,
         total: totalCount,
-        suggestion: remainingCount > 0 ? `${remainingCount}개 이하로 선택해주세요.` : '이 노선의 모든 역을 완료했습니다! 🎉'
+        suggestion: '다른 노선에 도전해보세요!'
       });
     }
 
-    // 2. 도전 레코드 생성
+    // 실제로 추출된 역 개수를 total_stations로 설정
+    const actualStationCount = stations.length;
+
+    // 2. 도전 레코드 생성 (실제 추출된 역 개수 사용)
     const [result] = await connection.execute(
       'INSERT INTO challenges (user_id, line_num, total_stations, completed_stations) VALUES (?, ?, ?, 0)',
-      [userId, lineName, stationCount]
+      [userId, lineName, actualStationCount]
     );
 
     const challengeId = result.insertId;

@@ -217,7 +217,7 @@ export default function HomePage({ userId }) {
             </p>
             <p className="text-gray-700 flex items-center gap-2">
               <span className="text-2xl">🎡</span>
-              룰렛을 돌려 <span className="font-bold text-purple-600">10개 중 1개 역</span>을 선택하고 방문하세요!
+              룰렛을 돌려 <span className="font-bold text-purple-600">1개 역</span>을 선택하고 방문하세요!
             </p>
           </div>
 
@@ -268,7 +268,7 @@ export default function HomePage({ userId }) {
             </button>
           </div>
           <p className="text-center text-gray-700 mb-6 font-semibold">
-            <span className="text-blue-600">{selectedLine}</span> • 10개 역 중 1개 선택
+            <span className="text-blue-600">{selectedLine}</span> • {stations.length}개 역 중 1개 선택
           </p>
 
           <RouletteWheel
