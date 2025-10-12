@@ -130,7 +130,7 @@ export default function StatsPage({ userId }) {
           <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-purple-200">
             <div className="text-3xl mb-2">🚉</div>
             <p className="text-gray-600 text-sm font-semibold mb-1">방문한 역</p>
-            <p className="text-3xl font-bold text-purple-600">{stats.unique_visited_stations}</p>
+            <p className="text-3xl font-bold text-purple-600">{stats.total_visit_count || stats.completed_challenges}</p>
             <p className="text-xs text-gray-500 mt-1">고유 역 {stats.unique_visited_stations}개</p>
           </div>
 

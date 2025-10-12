@@ -33,6 +33,7 @@ async function getUserStats(req, res, next) {
         success_rate: 0.00,
         total_visited_stations: 0,
         unique_visited_stations: 0,
+        total_visit_count: 0,
         total_play_time: 0,
         best_time: 0,
         current_streak: 0,
@@ -59,6 +60,13 @@ async function getUserStats(req, res, next) {
         max_streak: parseInt(statsRows[0].max_streak) || 0,
         total_score: parseInt(statsRows[0].total_score) || 0
       };
+
+      // 실제 방문 횟수 계산 (완료된 도전 수)
+      const [visitCountRows] = await pool.execute(
+        `SELECT COUNT(*) as total_visits FROM challenges WHERE user_id = ? AND status = 'completed' AND final_station_id IS NOT NULL`,
+        [userId]
+      );
+      stats.total_visit_count = parseInt(visitCountRows[0].total_visits) || 0;
     }
 
     res.json(stats);
@@ -68,7 +76,7 @@ async function getUserStats(req, res, next) {
 }
 
 /**
- * 사용자가 방문한 역 목록 조회
+ * 사용자가 방문한 역 목록 조회 (완료된 도전 기준, 중복 포함)
  * GET /api/users/:userId/visited-stations
  */
 async function getVisitedStations(req, res, next) {
@@ -79,34 +87,42 @@ async function getVisitedStations(req, res, next) {
     const parsedLimit = parseInt(limit);
     const parsedOffset = parseInt(offset);
 
+    // 완료된 도전의 final_station_id 기준으로 조회 (중복 포함)
     const [stations] = await pool.execute(
       `SELECT
-        uvs.station_id,
+        c.id as challenge_id,
+        c.final_station_id as station_id,
         s.station_nm,
         s.line_num,
-        uvs.first_visit_at,
-        uvs.visit_count,
-        uvs.last_visit_at
-      FROM user_visited_stations uvs
-      JOIN stations s ON uvs.station_id = s.id
-      WHERE uvs.user_id = ?
-      ORDER BY uvs.last_visit_at DESC
+        c.completed_at as first_visit_at,
+        1 as visit_count
+      FROM challenges c
+      JOIN stations s ON c.final_station_id = s.id
+      WHERE c.user_id = ? AND c.status = 'completed' AND c.final_station_id IS NOT NULL
+      ORDER BY c.completed_at DESC
       LIMIT ${parsedLimit} OFFSET ${parsedOffset}`,
       [userId]
     );
 
-    // 총 방문 역 수
+    // 총 방문 횟수 (완료된 도전 수)
     const [countRows] = await pool.execute(
-      `SELECT COUNT(*) as total FROM user_visited_stations WHERE user_id = ?`,
+      `SELECT COUNT(*) as total FROM challenges WHERE user_id = ? AND status = 'completed' AND final_station_id IS NOT NULL`,
+      [userId]
+    );
+
+    // 고유 역 수
+    const [uniqueRows] = await pool.execute(
+      `SELECT COUNT(DISTINCT final_station_id) as unique_count FROM challenges WHERE user_id = ? AND status = 'completed' AND final_station_id IS NOT NULL`,
       [userId]
     );
 
     res.json({
       stations: stations.map(s => ({
         ...s,
-        visit_count: parseInt(s.visit_count) || 0
+        visit_count: 1
       })),
       total: countRows[0].total,
+      unique_count: uniqueRows[0].unique_count,
       limit: parseInt(limit),
       offset: parseInt(offset)
     });
