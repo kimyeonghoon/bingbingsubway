@@ -18,16 +18,49 @@ async function createChallenge(req, res, next) {
 
     await connection.beginTransaction();
 
-    // 1. 랜덤 역 선택 (stationCount는 정수로 변환하여 SQL injection 방지)
+    // 1. 이미 완료한 역 제외하고 랜덤 역 선택
     const [stations] = await connection.execute(
-      `SELECT * FROM stations WHERE line_num = ? ORDER BY RAND() LIMIT ${stationCount}`,
-      [lineName]
+      `SELECT * FROM stations
+       WHERE line_num = ?
+       AND id NOT IN (
+         SELECT DISTINCT final_station_id
+         FROM challenges
+         WHERE user_id = ? AND status = 'completed' AND final_station_id IS NOT NULL
+       )
+       ORDER BY RAND()
+       LIMIT ${stationCount}`,
+      [lineName, userId]
     );
 
     if (stations.length < stationCount) {
       await connection.rollback();
+
+      // 해당 노선의 전체 역 수 확인
+      const [totalStations] = await connection.execute(
+        `SELECT COUNT(*) as total FROM stations WHERE line_num = ?`,
+        [lineName]
+      );
+
+      // 이미 완료한 역 수 확인
+      const [completedStations] = await connection.execute(
+        `SELECT COUNT(DISTINCT final_station_id) as completed
+         FROM challenges
+         WHERE user_id = ? AND status = 'completed' AND final_station_id IS NOT NULL
+         AND final_station_id IN (SELECT id FROM stations WHERE line_num = ?)`,
+        [userId, lineName]
+      );
+
+      const remainingCount = stations.length;
+      const completedCount = completedStations[0].completed;
+      const totalCount = totalStations[0].total;
+
       return res.status(400).json({
-        error: `해당 노선에 ${stationCount}개 이상의 역이 없습니다.`
+        error: `해당 노선에 아직 방문하지 않은 역이 ${stationCount}개 미만입니다.`,
+        requested: parseInt(stationCount),
+        available: remainingCount,
+        completed: completedCount,
+        total: totalCount,
+        suggestion: remainingCount > 0 ? `${remainingCount}개 이하로 선택해주세요.` : '이 노선의 모든 역을 완료했습니다! 🎉'
       });
     }
 
